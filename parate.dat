@@ -1,0 +1,125 @@
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c	parate.dat
+c
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+        parameter(
+c!!!!!!    分子数パラメータ    !!!!!!
+c nkossAr：アルゴンの分子数
+c nkossKr：クリプトンの分子数
+     &  nkoar = 2592,
+c 壁面粒子の個数パラメータ
+c n1_1x:x方向に並べるPt粒子の数＊＊＊＊最低でも20は必要!!!!＊＊＊＊＊＊
+c n1_1y:y方向に並べるPt粒子の数＊＊＊＊最低でも20は必要!!!!＊＊＊＊＊＊
+c n1_1z:z方向に並べるPt粒子の数
+     & n1_1x = 26, n1_1y = 13, n1_1z = 4,
+c　ptkosi3: Ptの格子定数
+     &  ptkosi3 = 3.9231D0,
+c nkoss_bot：スリット底壁面のPtの分子数
+c nkoss_top：スリット上壁面のPtの分子数
+c nkopt：Ptの分子数
+     &  nkoss_bot = n1_1x*n1_1y*n1_1z,
+     &  nkoss_top = n1_1x*n1_1y*n1_1z,
+     &  nkopt =  nkoss_bot + nkoss_top,
+c nhos: 上下壁面固定層の個数
+     &  nhos = n1_1x*n1_1y,
+
+
+c!!!!!!    周期境界長さパラメータ    !!!!!!
+c xsyul0：x方向の周期境界長さ(無次元,有次元の場合10^-10m)
+c ysyul0：y方向の周期境界長さ(無次元,有次元の場合10^-10m)
+c zsyul0：z方向の周期境界長さ(無次元,有次元の場合10^-10m)
+     &  xsyul0 = 49.9154D0,
+     &  ysyul0 = 49.9154D0,
+     &  zsyul0 = 49.9154D0,
+
+
+c!!!!!!    分子の質量・LJポテンシャルパラメータ    !!!!!!
+c bunsiar：Ar分子の質量  kg/mol
+c bunsipt：Pt分子の質量  kg/mol
+c sigar：Ar分子のLennard-Jonesパラメータσ(無次元)
+c epsar：Ar分子のLennard-Jonesパラメータε(無次元)
+c sigpt：Pt分子のLennard-Jonesパラメータσ(無次元)
+c epspt：Pt分子のLennard-Jonesパラメータε(無次元)
+     &  bunsiar = 39.950D-3, sigar = 3.400D0, epsar = 1.6700D-5,
+     &  bunsipt = 195.084D-3, sigpt = 2.540D0, epspt = 109.20D-5,
+c debye：Ptのデバイ温度[K]
+     &  debye = 240D0,
+c alpha_ap：Ar-Ptの相互作用強さ
+     &  alpha_ap = 0.01D0,
+
+c!!!!!!    系内温度パラメータ    !!!!!!
+c atemp1：系内Ar(目標)温度  K
+c atemp1_bot：Pt下壁面（目標）温度  K
+c atemp1_top：Pt上壁面（目標）温度  K
+     &  atemp1 = 115.0D0,
+     &  atemp1_bot = 115.0D0,
+     &  atemp1_top = 115.0D0,
+
+c!!!!!!    カットオフパラメータ    !!!!!!
+c cutoff33：カットオフ長さ/σ
+     &  cutoff33= 3.000D0,
+c safe：bookkeepの安全率
+     &  safe = 1.20D0,
+
+c!!!!!!    計算時間・ステップパラメータ    !!!!!!
+c maxstep：最大ステップ数
+c dt：無次元時間ステップ(無次元, 有次元の場合fs)
+     &  maxstep = 1100000,
+     &  dt = 1.00D0,
+
+c!!!!!!    各種定数パラメータ    !!!!!!
+c avoga：アボガドロ数　
+c boltz：ボルツマン定数
+c planck：プランク定数
+c pi：円周率
+     &  avoga = 6.022D+23,
+     &  boltz = 1.3806662D-23,
+     &  pi = 3.141592654D0,
+     &  planck = 6.6260693D-34,
+
+c nmesh：密度分布軸方向分割数
+     &  nmesh = 100,
+
+c!!!!!!    MSD計測パラメータ    !!!!!!
+c nmsd:1000ステップごとに10000ステップ計算を何回するか
+c nshift:ずらしたやつを何個作るか
+c nmsdtime:msd計算時間の個数(0.5,1.5,2.5,…9.5[ps])
+     &  nmsd = 20,
+     &  nshift_m = 100,
+     &  nmsdtime = 500,
+
+c!!!!!!    GreenKubo積分パラメータ    !!!!!!
+c nGK:直線的な平均をいくつ作るか
+c nGK_in:内積出力の個数
+     &  nGK = 100,
+     &  nshift_G = 20,
+     &  nGK_in = 100,
+c 台形積分用
+     &  nGKdai = 10000,
+
+c!!!!!    生存確率パラメータ     !!!!!
+c nsurv：直線的な平均をいくつとるか
+c nshift_s：ズラす個数
+c nsurv_mesh_z：z軸方向の分割数
+c nsurv_time：生存確率出力の個数
+     &  nsurv = 20,
+     &  nshift_s = 100,
+     &  nsurv_mesh_z = 8,
+     &  nsurv_time = 50000,
+
+c!!!!!    生存確率を使ったMSDパラメータ    !!!!!
+     &  nshift_h = 100,
+
+
+c!!!!!!    アニメーション作成パラメータ    !!!!!!
+c nmol:総分子数
+     &  moltype = 1,
+     &  nmol = nkoar,
+     &  ndat1 = 3015,
+     &  ntime0 = 0,
+     &  ndt = 1,
+c 粒子の色付け
+     &  nsar = 0,
+     &  nspt =2
+     &      )

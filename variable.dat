@@ -1,0 +1,143 @@
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                     c
+c     a-h, o-z から始まる変数はdouble precision型       c
+c     i,j,k,l,m,n から始まるのは基本int型                c
+c     こっちのファイルは末尾が数字                       c
+c                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    座標・速度    ccccccccccccccccccccccccccccccccccccccccccc
+c Ar分子の座標(x,y,z方向)
+        common /posit1/ pos1x(nkoar), pos1y(nkoar), pos1z(nkoar)
+c Ar分子の速度(x,y,z方向)
+        common /veloc1/ vel1x(nkoar), vel1y(nkoar), vel1z(nkoar)
+c Ar分子に働く力(x,y,z方向)
+        common /force1/ for1x(nkoar), for1y(nkoar), for1z(nkoar)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    エネルギー    cccccccccccccccccccccccccccccccccccccccccccc
+c Ar分子のポテンシャルエネルギ，運動エネルギ
+        common /enegy1/ poten1(nkoar), ukine1(nkoar)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    分子の各種パラメータ    cccccccccccccccccccccccccccccccccc
+c Ar,Kr,Ptの質量
+        common /mass/ zmass1
+c Ar-Ar間のLennard-Jonesパラメータ，σ，ε，力の計算の係数
+        common /sigeps1/ sig1, eps1, cforce1
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    カットオフパラメータ    cccccccccccccccccccccccccccccccccc
+c Ar-Arポテンシャルのカットオフ長さx,y,z方向
+        common /cutof1/ xcutof1, ycutof1, zcutof1
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    粒子登録法データ    cccccccccccccccccccccccccccccccccccccc
+c 各分子の最高速度
+        common /vmax/ v1_max
+c np1,np4,np5：相互作用している粒子のペアの数(1=Ar-Ar,4=Pt-Pt,5=Ar-Pt)
+c np11,np12,np41,np42,np51,np52：相互作用している粒子番号np(粒子の関係)(その1とその2)
+c       Ar-Ar間の粒子登録
+        common /pair1/ np1, np11(nkoar*nkoar/2), np12(nkoar*nkoar/2)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    ステップ数関係    cccccccccccccccccccccccccccccccccccccccc
+c nowstp:現在のステップ数
+c nstrtstp:緩和計算終了時のステップ数
+        common /steps/ nowstp, nstrtstp, msdstp, nmsdstp,
+     &                 mvacfstp, nvacfstp
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    境界長さパラメータ    cccccccccccccccccccccccccccccccccccc
+c x,y,z方向の周期長さ
+        common /syuuki/ xsyul,ysyul,zsyul
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    密度分布パラメータ    cccccccccccccccccccccccccccccccccccc
+        common /betwall/ z_width, z_wall_bot, z_wall_top
+        common /density_log/ density_1log(nmesh)
+        common /ndcounter/ ndenscount
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccc    MSD関係    ccccccccccccccccccccccccccccccccccccccccccccccc
+c!!!!!!    分子位置記録    !!!!!!
+        common /positkeep1/ posk1x(nkoar),
+     &                      posk1y(nkoar),
+     &                      posk1z(nkoar)
+c!!!!!!    変位記録    !!!!!!
+        common /displ1/ displ1x(nkoar),displ1y(nkoar),displ1z(nkoar)
+c!!!!!!    変位の合計    !!!!!!
+        common /distsum1/ dsum1x(nshift_m,nkoar),
+     &                    dsum1y(nshift_m,nkoar),
+     &                    dsum1z(nshift_m,nkoar)
+c!!!!!!    msd計算のステップ    !!!!!!
+        common /msd_counter/ msdcount(nshift_m), msdcount_st(nshift_m)
+c!!!!!!    計算したmsd    !!!!!!
+        common /dmsd/ dmsd1(nshift_m)
+c!!!!!!    平均化・記録用のmsd    !!!!!!
+        common /avemsd/ dmsdlog1(nmsdtime)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccc    GreenKuboによる自己拡散係数計算    cccccccccccccccccccccccc
+c!!!!!! t_0速度保存・平均 !!!!!!
+        common /velk_GK1/ velk_GK1x(nGK,nshift_G,nkoar),
+     &                    velk_GK1y(nGK,nshift_G,nkoar),
+     &                    velk_GK1z(nGK,nshift_G,nkoar)
+        common /velave1/ velave1x,velave1y,velave1z
+        common /nGK_counter/ nGKcount(nshift_G), nGKcount_st(nshift_G)
+        common /GK_in/ GK_in1(nshift_G)
+        common /GK_inlog/ GK_in1log(nGK_in), GK_dai(nGKdai)
+        common /GK_sum/ GK_sum1, GK_sum_dai
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+cccccccccc    領域ごとの生存確率    cccccccccccccccccccccccccccccccccccc
+        common /nsurvsteps/ nsurvstp, nsurvcount(nshift_s),
+     &                      nsurvcount_st(nshift_s)
+        common /nslabhan/ nhantei(nshift_s, nkoar, nsurv_mesh_z),
+     &                    num_surv(nshift_s, nsurv_mesh_z),
+     &                    n_slab0(nshift_s, nsurv_mesh_z)
+        common /suvivepr/ suv_prob(nsurv_mesh_z, nsurv_time),
+     &                    z_surv
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccc    生存確率を使ったMSD    cccccccccccccccccccccccccccccccccccccc
+        common /nhanstps/ nsurvhantei, nhancount(nshift_h),
+     &                    nhancount_st(nshift_h)
+        common /njudge/ nremain(nshift_h,nkoar,nsurv_mesh_z),
+     &                  n_suv_msd(nshift_h,nsurv_mesh_z),
+     &                  n_suv0_slab(nshift_h,nsurv_mesh_z)
+        common /dmsd_judge/ d_sv_sum1x(nshift_h,nkoar,nsurv_mesh_z),
+     &                      d_sv_sum1y(nshift_h,nkoar,nsurv_mesh_z),
+     &                      d_sv_sum1z(nshift_h,nkoar,nsurv_mesh_z),
+     &                      d_sv_msd(nshift_h,nsurv_mesh_z),
+     &                      d_sv_msdA(nshift_h,nsurv_mesh_z),
+     &                      d_sv_msdB(nshift_h,nsurv_mesh_z),
+     &                      dit_sv1x(nshift_h,nkoar,nsurv_mesh_z),
+     &                      dit_sv1y(nshift_h,nkoar,nsurv_mesh_z),
+     &                      dit_sv1z(nshift_h,nkoar,nsurv_mesh_z),
+     &                      d_svmsdlog1(nmsdtime,nsurv_mesh_z),
+     &                      d_svmsdlog2(nsurv_time,nsurv_mesh_z),
+     &                      dmsd_pk(nsurv_time,nsurv_mesh_z)
+
+ccccccccc    生存確率を使ったVACF    ccccccccccccccccccccccccccccccccccccc
+        common /vacf_sp/ veloc0_1x(nshift_h,nkoar),
+     &                   veloc0_1y(nshift_h,nkoar),
+     &                   veloc0_1z(nshift_h,nkoar)
+        common /njudge_vacf/ n_suv_vacf(nshift_h,nsurv_mesh_z),
+     &                       n_suv0_vacf(nshift_h,nsurv_mesh_z)
+        common /dvacf_judge/ d_sv_vacf(nshift_h,nsurv_mesh_z),
+     &                       d_sv_vacfA(nshift_h,nsurv_mesh_z),
+     &                       d_sv_vacfB(nshift_h,nsurv_mesh_z),
+     &                       d_svvacflog1(nmsdtime,nsurv_mesh_z),
+     &                       d_svvacflog2(nsurv_time,nsurv_mesh_z),
+     &                       dvacf_pk(nsurv_time,nsurv_mesh_z),
+     &                       GK_sum_dai_sp2(nsurv_mesh_z)
