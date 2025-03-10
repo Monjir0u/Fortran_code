@@ -1,46 +1,63 @@
+! 変数名のルール
+! num → 数字, 数 (number)
+! mol → 分子 (molecule)
+! temp → 温度 (temepature)
+! time → 時間 (time)
+! step → ステップ (step)
+! up → 上壁面 (upper layer)
+! lw → 下壁面 (lower layer)
+! coef → 係数 (coefficient)
+! heat → 熱量 (heat)
+! pot → ポテンシャルエネルギー (potential energy)
+! kin → 運動エネルギー (kinetic energy)
+! len → 長さ (length)
+
+! 定数は大文字で定義
+
 module parameters
     implicit none
     !--------------- よく変更する---------------------!
     ! 計算時間
-    double precision, parameter :: timeScaling = 0.1d0 ! スケーリング時間[ns]
-    double precision, parameter :: timeRelax   = 3.0d0 ! 緩和計算時間[ns]
-    double precision, parameter :: timeMeasure = 8.0d0 ! データ計測時間[ns]
-    double precision, parameter :: timeSum = timeScaling + timeRelax + timeMeasure ! 全計算時間
+    double precision, parameter :: time_scaling = 0.1d0 ! スケーリング時間[ns]
+    double precision, parameter :: time_relax   = 3.0d0 ! 緩和計算時間[ns]
+    double precision, parameter :: time_measure = 8.0d0 ! データ計測時間[ns]
+    double precision, parameter :: time_all = time_scaling + time_relax + time_measure ! 全計算時間
     
     double precision, parameter :: dt = 1.00d0 ! 無次元時間ステップ(無次元，有次元の場合fs)
     double precision, parameter :: tau = 1.00d0 ! 測定間隔[fs]
 
-    double precision, parameter :: tempAr = 100d0 ! 系内（目標）温度  K
-    double precision, parameter :: angCon = 0.01d0 ! 相互作用強さ
+    double precision, parameter :: TEMP_Ar = 100d0 ! 系内（目標）温度  K
+    double precision, parameter :: INTER_STG = 0.01d0 ! 相互作用強さ
 
-    character(len=20) :: dir_name = 'e0.01_/1'  ! ファイル名
+    character(len=20) :: dir_name = 'a0.1'  ! ファイル名
+    !------------------------------------------------!
 
     ! ステップ
-    integer, parameter :: stpScaling = int(timeScaling/dt*1.0d+6) ! スケーリングステップ
-    integer, parameter :: stpRelax   = int(timeRelax  /dt*1.0d+6) ! 緩和計算ステップ
-    integer, parameter :: stpMeasure = int(timeMeasure/dt*1.0d+6) ! データ計測ステップ
-    integer, parameter :: stpMax = stpScaling + stpRelax + stpMeasure ! 最大ステップ数
+    integer, parameter :: step_scaling = int(time_scaling/dt*1.0d+6) ! スケーリングステップ
+    integer, parameter :: step_relax   = int(time_relax  /dt*1.0d+6) ! 緩和計算ステップ
+    integer, parameter :: step_measure = int(time_measure/dt*1.0d+6) ! データ計測ステップ
+    integer, parameter :: step_all = step_scaling + step_relax + step_measure ! 最大ステップ数
 
     ! 分子の数，配置
     integer, parameter :: TYPMOL = 3 ! 分子の種類数
-    integer, parameter :: COMP = 3 ! 相互作用の組み合わせ数 = nC2
-    integer, parameter :: numx(TYPMOL) = [20,10,20]
-    integer, parameter :: numy(TYPMOL) = [10, 8,10]
-    integer, parameter :: numz(TYPMOL) = [ 6,25, 6]
-    integer, parameter :: nummol(TYPMOL) = [numx(1)*numy(1)*numz(1), numx(2)*numy(2)*numz(2), numx(3)*numy(3)*numz(3)] ! 各分子の数
-    integer, parameter :: tlnkoss = nummol(1) + nummol(2) + nummol(3)
+    integer, parameter :: NUM_X(TYPMOL) = [20,10,20]
+    integer, parameter :: NUM_Y(TYPMOL) = [10, 8,10]
+    integer, parameter :: NUM_Z(TYPMOL) = [ 6,25, 6]
+    integer, parameter :: NUM_MOL(TYPMOL) = [NUM_X(1)*NUM_Y(1)*NUM_Z(1), NUM_X(2)*NUM_Y(2)*NUM_Z(2), NUM_X(3)*NUM_Y(3)*NUM_Z(3)] ! 各分子の数
+    integer, parameter :: NUM_MOL_ALL = NUM_MOL(1) + NUM_MOL(2) + NUM_MOL(3)
     
     ! 境界条件
-    double precision, parameter :: STDIST(TYPMOL) = [3.92d0, 4.8d0, 3.92d0] ! 格子定数(無次元)[Å]
-    double precision, parameter :: thick1 = STDIST(1)*(numz(1)*0.5d0+0.25d0)
-    double precision, parameter :: thick2 = STDIST(2)*numz(2)*0.5d0
-    double precision, parameter :: thick3 = STDIST(3)*(numz(3)*0.5d0+0.25d0)
-    double precision, parameter :: thick(TYPMOL) = [thick1, thick2, thick3]
-    double precision, parameter :: xsyul0 = STDIST(1) * numy(1) ! x方向の周期境界長さ(無次元)
-    double precision, parameter :: ysyul0 = STDIST(1) * numy(1) ! y方向の周期境界長さ(無次元）
-    double precision, parameter :: zsyul0 = 87.0d0 ! thick(1)+thick(2)+thick(3) ! z方向の周期境界長さ(無次元）
-    double precision, parameter :: syul0(3) = [xsyul0, ysyul0, zsyul0]
+    double precision, parameter :: ST_DIST(TYPMOL) = [3.92d0, 4.8d0, 3.92d0] ! 格子定数(無次元)[Å] (stndard distance)
+    double precision, parameter :: BND_LEN_X0 = ST_DIST(1) * NUM_Y(1) ! x方向の周期境界長さ(無次元) (boundary length)
+    double precision, parameter :: BND_LEN_Y0 = ST_DIST(1) * NUM_Y(1) ! y方向の周期境界長さ(無次元）
+    double precision, parameter :: BND_LEN_Z0 = 87.0d0 ! z方向の周期境界長さ(無次元）
+    double precision, parameter :: BND_LEN0(TYPMOL) = [BND_LEN_X0, BND_LEN_Y0, BND_LEN_Z0]
+    double precision, parameter :: THICK_Pt_UP = ST_DIST(1)*(NUM_Z(1)*0.5d0+0.25d0)
+    double precision, parameter :: THICK_Pt_LW = ST_DIST(3)*(NUM_Z(3)*0.5d0+0.25d0)
+    double precision, parameter :: THICK_Ar = BND_LEN_Z0 - THICK_Pt_UP - THICK_Pt_LW
+    double precision, parameter :: THICK(TYPMOL) = [THICK_Pt_UP, THICK_Ar, THICK_Pt_LW]
     
+    ! 定数
     double precision, parameter :: CUTOFF = 3.300d0 ! カットオフ長さ/σ
     double precision, parameter :: AVOGA = 6.022d+23 ! アボガドロ数
     double precision, parameter :: BOLTZ = 1.3806662d-23 ! ボルツマン定数 [J/K]
@@ -49,37 +66,40 @@ module parameters
     ! 分子の質量
     !double precision, parameter :: bunsi(TYPMOL) = [195.084d-3, 39.950d-3, 195.084d-3] ! 分子の質量  kg/mol   
     double precision, parameter :: MASS(TYPMOL) = [32.395d0, 6.6340d0, 32.395d0] ! 分子の質量（無次元） * 10d-26 [kg/個]
+
     ! Lennard-Jonesパラメータ
-    double precision, parameter :: SIG(COMP+1) = [2.540d0, 3.400d0, 2.540d0, 2.970d0]  ! σ(無次元) *1.0d-10
-    double precision, parameter :: EPS(COMP+1) = [109.2d-5, 1.666d-5, 109.2d-5, 13.49d-5] ! ε(無次元) *1.0d-16
+    double precision, parameter :: SIG(4) = [2.540d0, 3.400d0, 2.540d0, 2.970d0]  ! σ(無次元) *1.0d-10
+    double precision, parameter :: EPS(4) = [109.2d-5, 1.666d-5, 109.2d-5, 13.49d-5] ! ε(無次元) *1.0d-16
 
     ! 粒子登録法
-    integer, parameter :: stpUpdate = 40 ! 更新ステップ
+    integer, parameter :: step_update = 40 ! 更新ステップ
 
     ! Langevin法
-    double precision, parameter :: tempLanPt(TYPMOL) = [100d0, 0d0, 100d0] ! Langevin法を用いるPtの温度  真ん中は使わない
+    double precision, parameter :: TEMP_Langevin(TYPMOL) = [100d0, 0d0, 100d0] ! Langevin法を用いるPtの温度  真ん中は使わない
     double precision, parameter :: DIRAC = 1.054571817d-34 ! ディラック定数 [J･s]
     double precision, parameter :: DEBTMP = 240d0 ! Debye温度 [K]
-    double precision, parameter :: OMEGA = 3.14212728482d+13 ! BOLTZ * DEBTMP / DIRAC * 1.000d-11 ! Debye定数 (有次元)
+    double precision, parameter :: OMEGA = 3.14212728482d+13 ! BOLTZ * DEBTMP / DIRAC * 1.0d-11 ! Debye定数 (有次元)
     double precision, parameter :: DAMP =  5.32967075080d-12 ! MASS(1) * PI * OMEGA / 6.000d0 ! ダンパーの減衰係数 (有次元)
-    ! 熱流束
-    double precision, parameter :: areaPt = STDIST(1)*STDIST(1)*int(numx(1)*0.5)*numy(1)
     
-    integer, parameter :: numDivAr = 15 ! Arの温度分布の分割数
+    ! 熱流束
+    double precision, parameter :: AREA_Pt = ST_DIST(1)*ST_DIST(1)*int(NUM_X(1)*0.5)*NUM_Y(1)
+    
+    ! 温度分布
+    integer, parameter :: NUM_DIV_Ar = 15 ! Arの温度分布の分割数
+    double precision :: LEN_DIV_Ar = THICK(2)/NUM_DIV_Ar ! Arの温度分布の分割距離
 
-    integer, parameter :: stpRecord = 1 ! 記録するステップ数間隔
-
+    !--------------------この部分は使わなくてもいい---------------------------------------
     ! Green-Kubo用
-    double precision, parameter :: timePlot = 10.0d0 ! データプロット時間 [ps]
-    double precision, parameter :: timeInterval = 0.01d0 ! 時間間隔 [ps]
-    double precision, parameter :: timeSlide = 0.001d0 ! ずらす時間 [ps]
-
-    integer, parameter :: stpPlot = int(timePlot/dt*1.0d+3) ! データプロット時間をステップ数に変換
-    integer, parameter :: plot = int(timePlot/timeInterval) ! プロット数
-    integer, parameter :: stpInterval = int(timeInterval/dt*1.0d+3)
-    integer, parameter :: stpSlide = int(timeSlide/dt*1.0d+3) ! ずらすステップ数
-    integer, parameter :: numSlide = 999 ! 
-    integer, parameter :: numEnsemble = int(timeMeasure/timePlot*1.0d+3) ! アンサンブルを取る数
+    double precision, parameter :: time_plot = 10.0d0 ! データプロット時間 [ps]
+    double precision, parameter :: time_interval = 0.01d0 ! 時間間隔 [ps]
+    double precision, parameter :: time_slide = 0.001d0 ! ずらす時間 [ps]
+    integer, parameter :: step_plot = int(time_plot/dt*1.0d+3) ! データプロット時間をステップ数に変換
+    integer, parameter :: NUM_PLOT = int(time_plot/time_interval) ! プロット数
+    integer, parameter :: step_interval = int(time_interval/dt*1.0d+3)
+    integer, parameter :: step_slide = int(time_slide/dt*1.0d+3) ! ずらすステップ数
+    integer, parameter :: NUM_SLIDE = 999 ! 
+    integer, parameter :: NUM_ENSEMBLE = int(time_measure/time_plot*1.0d+3) ! アンサンブルを取る数
+    !------------------------------------------------------------------------------------
 
 end module parameters
 
@@ -87,40 +107,38 @@ end module parameters
 module variable
     use parameters
     implicit none
-    integer :: stpNow ! 現在のステップ数
+    integer :: step_now ! 現在のステップ数
 
     ! 分子間力
-    double precision :: forCoef(4) = [0.0d0, 0.0d0, 0.0d0, 0.0d0] ! 力の計算の係数
+    double precision :: coef_force(4) = 0.0d0 ! 力の計算の係数
 
     ! カットオフ
-    double precision :: cutof(3) ! ポテンシャルのカットオフ長さx,y,z方向
-    double precision :: syul(3) ! ポテンシャルのカットオフ長さx,y,z方向，x,y,z方向の周期長さ
+    double precision :: cutoff(3) ! ポテンシャルのカットオフ長さx,y,z方向
+    double precision :: bnd_len(3) ! ポテンシャルのカットオフ長さx,y,z方向，x,y,z方向の周期長さ
 
     ! Langevin法
-    double precision :: rndForce(nummol(1),TYPMOL,3)   ! ランダム力用
-    double precision :: dmpForce(nummol(1),TYPMOL,3)   ! ダンパー力用
-    double precision :: stddev ! 標準偏差
+    double precision :: force_rand(NUM_MOL(1),TYPMOL,3)   ! ランダム力用
+    double precision :: force_damp(NUM_MOL(1),TYPMOL,3)   ! ダンパー力用
     double precision :: rnd_2
     logical :: isOdd = .true. ! 乱数のsinとcosを交互に出すためのフラグ
 
     ! 熱流束
-    double precision :: integrationTime ! 積算時間[fs]
-    double precision :: interForce(nummol(1),TYPMOL,3) ! 熱流束を計算するための相互作用力 z方向のみを使う
-    double precision :: heatPhantom(TYPMOL)! Phantom層からの熱輸送量
+    double precision :: force_inter(NUM_MOL(1),TYPMOL,3) ! 熱流束を計算するための相互作用力 z方向のみを使う
+    ! double precision :: heat_phantom(TYPMOL)! Phantom層からの熱輸送量
 
-    double precision :: tempLayerPt(numz(1),TYPMOL) = 0.000d0 ! Ptの層ごとの温度
-    double precision :: tempLayerAr(numDivAr) = 0.000d0 ! z方向に分割した領域内のArの温度
-    double precision :: zdiv = thick(2)/numDivAr ! Arの温度分布の分割距離
+    double precision :: temp_layer_Pt(NUM_Z(1),TYPMOL) = 0.0d0 ! Ptの層ごとの温度
+    double precision :: temp_layer_Ar(NUM_DIV_Ar) = 0.0d0 ! z方向に分割した領域内のArの温度
+    double precision :: LEN_DIV_Ar = THICK(2)/NUM_DIV_Ar ! Arの温度分布の分割距離
 
     ! EMD(平衡分子動力学)
-    double precision :: oneHeat(nummol(1)) ! 分子ひとつの熱量
-    double precision :: zeroHeat(numSlide, TYPMOL) ! 全Pt分子の時刻 0 の熱量
-    double precision :: nowHeat(TYPMOL) ! 全Pt分子の時刻 t の熱量
-    double precision :: scalarHeat(numSlide, TYPMOL) ! 時刻 0 と時刻 t の熱量の内積
+    double precision :: heat_one(NUM_MOL(1)) ! 分子ひとつの熱量
+    double precision :: heat_zero(NUM_SLIDE, TYPMOL) ! 全Pt分子の時刻 0 の熱量
+    double precision :: heat_now(TYPMOL) ! 全Pt分子の時刻 t の熱量
+    double precision :: heat_scalar(NUM_SLIDE, TYPMOL) ! 時刻 0 と時刻 t の熱量の内積
     double precision :: resist(TYPMOL) ! 界面熱抵抗
 
     ! Green-Kubo用
-    double precision :: ensembleHeat(plot,TYPMOL) ! 熱流束の内積を格納する配列
+    double precision :: heat_ensemble(NUM_PLOT,TYPMOL) ! 熱流束の内積を格納する配列
 
     contains
 
@@ -149,7 +167,7 @@ module variable
         double precision, intent(in) :: T_
         double precision :: stddev_
 
-        stddev_ = dsqrt(2.000d0 * DAMP * BOLTZ * T_ / dt * 1.000d+33)  ! 無次元 stddev -> 有次元では10^9
+        stddev_ = dsqrt(2.000d0 * DAMP * BOLTZ * T_ / dt * 1.0d+33)  ! 無次元 stddev -> 有次元では10^9
 
     end function getStddev
 end module variable
@@ -163,7 +181,7 @@ module molecules_struct
         double precision :: pos(3)
         double precision :: vel(3), vtmp(3)
         double precision :: acc(3)
-        double precision :: poten, kinet 
+        double precision :: pot, kin
     end type mol_info
 
     type mol_typ
@@ -174,15 +192,17 @@ module molecules_struct
 
 end module molecules_struct
 
+! PVWINという可視化ソフト用
 ! module forPVwin
 !     use parameters
 !     implicit none
-!     integer, parameter :: tlnkoss = nummol(1) + nummol(2) + nummol(3)
+!     integer, parameter :: NUM_MOL_ALL = NUM_MOL(1) + NUM_MOL(2) + NUM_MOL(3)
 !     integer, parameter :: moltype = 1
-!     integer, parameter :: ndat = int(stpMax/100)
+!     integer, parameter :: ndat = int(step_all/100)
 !     integer, parameter :: ntime0 = 0
 !     integer, parameter :: ndt = 1
 ! end module forPVwin
+! PVWINはおすすめしません
 
 program main
     use parameters
@@ -196,12 +216,11 @@ program main
     integer, allocatable :: seed(:)
     double precision :: rnd
 
-    ! 日付と時刻
-    ! character(len=8) :: date
     character(len=100) :: filepath
 
     filepath = '/home/kawaguchi/' // trim(dir_name)
 
+    ! ----------------------これをしないと同じ結果になってしまう
     ! 乱数シードの初期化
     call random_seed(size=seedsize) !初期値のサイズを取得
     allocate(seed(seedsize)) !配列の割り当て
@@ -211,9 +230,9 @@ program main
     call random_seed(put=seed(:)) !初期値を与える
 
     ! 配列初期化
-    allocate(typ(1)%mol(nummol(1)))
-    allocate(typ(2)%mol(nummol(2)))
-    allocate(typ(3)%mol(nummol(3)))
+    allocate(typ(1)%mol(NUM_MOL(1)))
+    allocate(typ(2)%mol(NUM_MOL(2)))
+    allocate(typ(3)%mol(NUM_MOL(3)))
 
         !open(6,*) は使用できない
         open(1,file=trim(filepath) // '/condition.dat')
@@ -234,122 +253,113 @@ program main
         open(32,file=trim(filepath) // '/energy_PtLw.dat')
         open(35,file=trim(filepath) // '/energy_all.dat')
     ! 系の温度データの出力
-        open(40,file=trim(filepath) // '/tempe.dat')
-        open(41,file=trim(filepath) // '/tempe_PtUp_Layer.dat')
-        open(42,file=trim(filepath) // '/tempe_Ar_Layer.dat')
-        open(43,file=trim(filepath) // '/tempe_PtLw_Layer.dat')
-        
-        open(45,file=trim(filepath) // '/tempe_Layer.dat')
+        open(40,file=trim(filepath) // '/temp.dat')    
+        open(45,file=trim(filepath) // '/temp_Layer.dat')
     ! 熱流束のデータ
         open(60,file=trim(filepath) // '/heatflux.dat')
         open(61,file=trim(filepath) // '/pressure.dat')
-        open(62,file=trim(filepath) // '/scalar_heatflow_top.dat')
-        open(63,file=trim(filepath) // '/scalar_heatflow_bottom.dat')
-        open(64,file=trim(filepath) // '/flow_check_top.dat')
-        open(65,file=trim(filepath) // '/flow_check_bottom.dat')
-
-        open(69,file=trim(filepath) // '/zero_check.dat')
+        open(64,file=trim(filepath) // '/heat_sum_upper.dat')
+        open(65,file=trim(filepath) // '/heat_sum_lower.dat')
         
         open(70,file=trim(filepath) // '/force_phantom.dat')
         open(71,file=trim(filepath) // '/force_interface.dat')
 
     ! 各分子の最終位置データの出力
         open(80,file=trim(filepath) // '/finpos.dat')
-        open(81,file=trim(filepath) // '/ACF_top.dat')
-        open(82,file=trim(filepath) // '/ACF_bottom.dat')
+        open(81,file=trim(filepath) // '/ACF_upper.dat')
+        open(82,file=trim(filepath) // '/ACF_lower.dat')
 
-        open(85,file=trim(filepath) // '/ensemble_check.dat')
+    !--------------------PVWIN用
     !　分子の色
         ! open(90,file=trim(filepath) // '/mask.dat')
 
-    ! write(15,'(3I7)') moltype, tlnkoss, ndat
+    ! write(15,'(3I7)') moltype, NUM_MOL_ALL, ndat
     ! do i = 1,ndat
-    !     do j = 1, numx(1)*numy(1)
+    !     do j = 1, int(NUM_MOL(1)/NUM_Z(1))
     !         write(90,'(I7)') 15      ! 白色
     !     end do
-    !     do j = numx(1)*numy(1) + 1, nummol(1)
+    !     do j = int(NUM_MOL(1)/NUM_Z(1)) + 1, NUM_MOL(1)
     !         write(90,'(I7)') 14      ! 赤色
     !     end do
-    !     do j = 1, nummol(2)
+    !     do j = 1, NUM_MOL(2)
     !         write(90,'(I7)') 7       ! 黄色
     !     end do
-    !     do j = 1, numx(3)*numy(3)
+    !     do j = 1, int(NUM_MOL(3)/NUM_Z(3))
     !         write(90,'(I7)') 15      ! 白色
     !     end do
-    !     do j = numx(3)*numy(3) + 1, nummol(3)
+    !     do j = int(NUM_MOL(3)/NUM_Z(3)) + 1, NUM_MOL(3)
     !         write(90,'(I7)') 0       ! 青色
     !     end do
     ! end do
+    !---------------------------
     
     ! condition.datに設計条件を記録
     write(1,*) ''
-    write(1, '(A18, F7.4, A3)') 'Scaling Time : ', timeScaling, ' ns '
-    write(1, '(A18, F7.4, A3)') 'Relaxation Time : ', timeRelax, ' ns '
-    write(1, '(A18, F7.4, A3)') 'Measure Time : ', timeMeasure, ' ns '
+    write(1, '(A18, F7.4, A3)') 'Scaling Time : ', time_scaling, ' ns '
+    write(1, '(A18, F7.4, A3)') 'Relaxation Time : ', time_relax, ' ns '
+    write(1, '(A18, F7.4, A3)') 'Measure Time : ', time_measure, ' ns '
     write(1,*) ''
-    write(1, '(A8, I5)') 'Ar : ', nummol(2)
-    write(1, '(A8, I5, A2)') 'Pt : ', nummol(1), '*2'
-    write(1, '(A8, I5)') 'total : ', tlnkoss
+    write(1, '(A8, I5)') 'Ar : ', NUM_MOL(2)
+    write(1, '(A8, I5, A2)') 'Pt : ', NUM_MOL(1), '*2'
+    write(1, '(A8, I5)') 'total : ', NUM_MOL_ALL
     write(1,*) ''
-    write(1, '(A23, F4.2)') 'Strength Coefficient : ', angCon
-    write(1, '(A23, F5.1)') 'Temperature Ar : ', tempAr
-    write(1, '(A23, F5.1)') 'Temperature Pt Upper : ', tempLanPt(1)
-    write(1, '(A23, F5.1)') 'Temperature Pt Lower : ', tempLanPt(3)
+    write(1, '(A23, F4.2)') 'Strength Coefficient : ', INTER_STG
+    write(1, '(A23, F5.1)') 'Temperature Ar : ', TEMP_Ar
+    write(1, '(A23, F5.1)') 'Temperature Pt Upper : ', TEMP_Langevin(1)
+    write(1, '(A23, F5.1)') 'Temperature Pt Lower : ', TEMP_Langevin(3)
     write(1,*) ''
-    write(1, '(A11, I4)') 'ACF plot : ', plot
-    write(1, '(A11, F7.4, A3)') 'ACF time : ', timePlot, ' ps'
-    write(1, '(A16, F7.4, A3)') 'Plot interval : ', timeInterval, ' ps'
-    write(1, '(A13, F7.4, A3)') 'Slide time : ', timeSlide, ' ps'
-    write(1, '(A18, I6)') 'Ensemble number : ', numEnsemble*numSlide
-    write(1,*) ''
-    write(1, '(A18, I3, A5)') 'Record Interval : ', stpRecord, ' step'
+    write(1, '(A11, I4)') 'ACF plot : ', NUM_PLOT
+    write(1, '(A11, F7.4, A3)') 'ACF time : ', time_plot, ' ps'
+    write(1, '(A16, F7.4, A3)') 'Plot interval : ', time_interval, ' ps'
+    write(1, '(A13, F7.4, A3)') 'Slide time : ', time_slide, ' ps'
+    write(1, '(A18, I6)') 'Ensemble number : ', NUM_ENSEMBLE*NUM_SLIDE
 
     ! ターミナルに表示
     write(6,*) ''
-    write(6, '(A18, I8, A4)') 'Scaling Step : ', stpScaling, 'step'
-    write(6, '(A18, I8, A4)') 'Relaxation Step : ', stpRelax, 'step'
-    write(6, '(A18, I8, A4)') 'Measure Step : ', stpMeasure, 'step'
+    write(6, '(A18, I8, A4)') 'Scaling Step : ', step_scaling, 'step'
+    write(6, '(A18, I8, A4)') 'Relaxation Step : ', step_relax, 'step'
+    write(6, '(A18, I8, A4)') 'Measure Step : ', step_measure, 'step'
     write(6,*) ''
     write(6,*) '----------------------- Scaling Step -----------------------'
-    write(6, '(I8, A4)') stpScaling, 'step'
+    write(6, '(I8, A4)') step_scaling, 'step'
     write(6,*) ''  
     
-    stpNow = 0
-    ensembleHeat(:,:) = 0.000d0
+    step_now = 0
+    heat_ensemble(:,:) = 0.0d0
 
     call seting ! 各分子の初期位置，初期速度などの設定
     call ovito
 
-    do i = 1, stpMax + stpSlide*(numSlide-1)
-        stpNow = i
+    do i = 1, step_all + step_slide*(NUM_SLIDE-1)
+        step_now = i
         ! ターミナルに表示
-        if(stpNow == stpScaling+1) then
+        if(step_now == step_scaling+1) then
             write(6,*) ''
             write(6,*) '---------------------- Relaxation Step ----------------------'
-            write(6, '(I8, A4)') stpRelax, 'step'
+            write(6, '(I8, A4)') step_relax, 'step'
             write(6,*) ''
         end if
-        if(stpNow == stpScaling + stpRelax+1) then
+        if(step_now == step_scaling + step_relax+1) then
             write(6,*) ''
             write(6,*) '----------------------- Measure Step ------------------------'
-            write(6, '(I8, A4)') stpMeasure, 'step'
+            write(6, '(I8, A4)') step_measure, 'step'
             write(6,*) ''
         end if
 
         call cpu_time(time)
 
         ! ステップ数が500の倍数のとき
-        if (mod(stpNow,500) == 0) then
-            write(6,'(3X, I9, 1X, A3, I10, A1, F15.7, A3)') stpNow, ' / ', stpMax + stpSlide*(numSlide-1), '(', time, ' s)'
+        if (mod(step_now,500) == 0) then
+            write(6,'(3X, I9, 1X, A3, I10, A1, F15.7, A3)') step_now, ' / ', step_all + step_slide*(NUM_SLIDE-1), '(', time, ' s)'
         endif
 
         ! スケーリング
-        if (stpNow <= stpScaling .and. mod(stpNow,100) == 0) then
+        if (step_now <= step_scaling .and. mod(step_now,100) == 0) then
             call scaling ! 系内の全分子の温度の補正
         endif
 
         call calc_force_potential ! 各分子に働く力，速度，位置
-        if(stpNow > stpScaling + stpRelax) then
+        if(step_now > step_scaling + step_relax) then
             call calc_heatflux
         end if
         call calc_integration
@@ -357,20 +367,21 @@ program main
         call bound ! 境界条件の付与
 
         ! ステップ数が100の倍数+1のとき
-        if(mod(stpNow, 100) == 1) then
+        if(mod(step_now, 100) == 1) then
             ! call record_pos_vel ! 位置，速度を記録
             call record_energy_temp ! エネルギー，温度を記録
             
-            if(stpNow <= int((stpScaling + stpRelax/10)/10)) then
-                call ovito
+            if(step_now <= 10000) then ! 最初から最後まで記録するとデータ量が膨大になるので、適当に途中で止める
+                call ovito ! OVITOという可視化ソフト用に記録を取る
             end if
         end if
 
-        if(stpNow > stpScaling + stpRelax) then
-            call record_pressure_heatflux ! 熱流束を記録
+        if(step_now > step_scaling + step_relax) then
+            call record_pressure_heatflux ! 圧力、熱流束を記録
         end if
     end do
 
+    ! step_now == 1 (mod 100) で記録してきたが、最後は step_now == 0 でも記録
     call calc_force_potential ! 各分子に働く力，速度，位置
     call calc_heatflux
     call calc_integration
@@ -389,46 +400,48 @@ program main
         use molecules_struct
         implicit none
         integer :: num, i, j, k
-        double precision :: coord(3) = 0.0000d0 ! xyz座標
-        double precision :: ofst(3)
+        double precision :: coord(3) = 0.0d0 ! xyz座標 (coordinate)
+        double precision :: offset(3)
         double precision :: ran, alpha, beta, cr
         double precision :: v(3)
 
-        do i = 1, COMP
-            forCoef(i) = 24.00d0*EPS(i)/SIG(i)  ! 無次元なことに注意 
+        do i = 1, 3
+            coef_force(i) = 24.0d0*EPS(i)/SIG(i)  ! 無次元なことに注意 
         end do
-            forCoef(4) = angCon*24.00d0*EPS(4)/SIG(4)
+            coef_force(4) = INTER_STG*24.0d0*EPS(4)/SIG(4)
         
-        syul(:) = syul0(:)
-        ! write(15,*)syul0(1), syul0(2), syul0(3)
+        bnd_len(:) = BND_LEN0(:)
+
+        ! PVWIN用
+        ! write(15,*)BND_LEN0(1), BND_LEN0(2), BND_LEN0(3)
         ! write(15,*)ntime0, ndt
 
         do i = 1, TYPMOL
-            cutof(:) = syul(:) - CUTOFF*SIG(i)
+            cutoff(:) = bnd_len(:) - CUTOFF*SIG(i)
         end do
 
         num = 0
 
         !上段のPt配置
-        ofst(1) = STDIST(1)*0.25d0
-        ofst(2) = STDIST(1)*0.25d0
-        ofst(3) = zsyul0 - STDIST(1)*0.25d0
-        do k = 1,numz(1)
-            coord(3) = ofst(3) - dble(k-1)*STDIST(1)*0.5d0
-            do i = 1,numx(1)
-                coord(1) = ofst(1) + dble(i-1)*STDIST(1)*0.5d0
-                do j = 1,numy(1)
+        offset(1) = ST_DIST(1)*0.25d0
+        offset(2) = ST_DIST(1)*0.25d0
+        offset(3) = BND_LEN_Z0 - ST_DIST(1)*0.25d0
+        do k = 1,NUM_Z(1)
+            coord(3) = offset(3) - dble(k-1)*ST_DIST(1)*0.5d0
+            do i = 1,NUM_X(1)
+                coord(1) = offset(1) + dble(i-1)*ST_DIST(1)*0.5d0
+                do j = 1,NUM_Y(1)
                     if(mod(k,2) == 0) then  !z偶数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(1)   !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(1)   !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(1) + STDIST(1)*0.5d0    !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(1) + ST_DIST(1)*0.5d0    !x奇数
                         endif
                     else    !z奇数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(1) + STDIST(1)*0.5d0    !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(1) + ST_DIST(1)*0.5d0    !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(1)   !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(1)   !x奇数
                         endif
                     endif
                     num = num + 1
@@ -439,25 +452,25 @@ program main
 
         !中段のAr配置
         num = 0
-        ofst(1) = syul0(1)*0.50d0 - STDIST(2)*(0.25d0*(numx(2)  -1))
-        ofst(2) = syul0(2)*0.50d0 - STDIST(2)*(0.25d0*(numy(2)*2-1))
-        ofst(3) = syul0(3)*0.50d0 - STDIST(2)*(0.25d0*(numz(2)  -1))
-        do k = 1,numz(2)
-            coord(3) = ofst(3) + dble(k-1)*STDIST(2)*0.5d0
-            do i = 1,numx(2)
-                coord(1) = ofst(1) + dble(i-1)*STDIST(2)*0.5d0
-                do j = 1,numy(2)
+        offset(1) = BND_LEN0(1)*0.50d0 - ST_DIST(2)*(0.25d0*(NUM_X(2)  -1))
+        offset(2) = BND_LEN0(2)*0.50d0 - ST_DIST(2)*(0.25d0*(NUM_Y(2)*2-1))
+        offset(3) = BND_LEN0(3)*0.50d0 - ST_DIST(2)*(0.25d0*(NUM_Z(2)  -1))
+        do k = 1,NUM_Z(2)
+            coord(3) = offset(3) + dble(k-1)*ST_DIST(2)*0.5d0
+            do i = 1,NUM_X(2)
+                coord(1) = offset(1) + dble(i-1)*ST_DIST(2)*0.5d0
+                do j = 1,NUM_Y(2)
                     if(mod(k,2) == 0) then  !z偶数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(2)   !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(2)   !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(2) + STDIST(2)*0.5d0    !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(2) + ST_DIST(2)*0.5d0    !x奇数
                         endif
                     else    !z奇数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(2) + STDIST(2)*0.5d0    !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(2) + ST_DIST(2)*0.5d0    !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(2)   !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(2)   !x奇数
                         endif
                     endif
                     num = num + 1
@@ -468,25 +481,25 @@ program main
 
         !下段のPt配置
         num = 0
-        ofst(1) = STDIST(3)*0.25d0
-        ofst(2) = STDIST(3)*0.25d0
-        ofst(3) = STDIST(3)*0.25d0
-        do k = 1,numz(3)
-            coord(3) = ofst(3) + dble(k-1)*STDIST(3)*0.5d0
-            do i = 1,numx(3)
-                coord(1) = ofst(1) + dble(i-1)*STDIST(3)*0.5d0
-                do j = 1,numy(3)
+        offset(1) = ST_DIST(3)*0.25d0
+        offset(2) = ST_DIST(3)*0.25d0
+        offset(3) = ST_DIST(3)*0.25d0
+        do k = 1,NUM_Z(3)
+            coord(3) = offset(3) + dble(k-1)*ST_DIST(3)*0.5d0
+            do i = 1,NUM_X(3)
+                coord(1) = offset(1) + dble(i-1)*ST_DIST(3)*0.5d0
+                do j = 1,NUM_Y(3)
                     if(mod(k,2) == 0) then  !z偶数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(3)   !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(3)   !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(3) + STDIST(3)*0.5d0    !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(3) + ST_DIST(3)*0.5d0    !x奇数
                         endif
                     else    !z奇数
                         if(mod(i,2) == 0) then
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(3) + STDIST(3)*0.5d0    !x偶数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(3) + ST_DIST(3)*0.5d0    !x偶数
                         else
-                            coord(2) = ofst(2) + dble(j-1)*STDIST(3)   !x奇数
+                            coord(2) = offset(2) + dble(j-1)*ST_DIST(3)   !x奇数
                         endif
                     endif
                     num = num + 1
@@ -495,9 +508,9 @@ program main
             end do
         end do
 
-        cr = 1.00d-6
+        cr = 1.0d-6
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 call random_number(ran)
                 alpha = PI*ran
                 call random_number(ran)
@@ -514,8 +527,8 @@ program main
                 cycle
             end if
 
-            do i = 1, numx(j)*numy(j)        
-                typ(j)%mol(i)%vel(:) = 0.000d0
+            do i = 1, NUM_X(j)*NUM_Y(j)        
+                typ(j)%mol(i)%vel(:) = 0.0d0
             end do
         end do
     end subroutine seting
@@ -527,22 +540,21 @@ program main
         implicit none
         double precision :: temptp, vel2, aimtem, aimnot, baiss
         integer :: i
-        integer :: j = 2 ! Arのみ
 
-        temptp = 0.000d0
-        do i = 1, nummol(j)
-            vel2 = typ(j)%mol(i)%vel(1)**2 + typ(j)%mol(i)%vel(2)**2 + typ(j)%mol(i)%vel(3)**2
+        temptp = 0.0d0
+        do i = 1, NUM_MOL(2)
+            vel2 = typ(2)%mol(i)%vel(1)**2 + typ(2)%mol(i)%vel(2)**2 + typ(2)%mol(i)%vel(3)**2
             temptp = temptp + vel2
         end do
-        temptp = temptp / nummol(j) * 1.000d-16
-        aimtem = tempAr
-        aimnot = 3.000d0 * BOLTZ * aimtem / MASS(j)
+        temptp = temptp / NUM_MOL(2) * 1.0d-16
+        aimtem = TEMP_Ar
+        aimnot = 3.000d0 * BOLTZ * aimtem / MASS(2)
         baiss = dsqrt(aimnot / temptp)
 
         ! 速度ベクトルのスケーリング
         ! Arのみ
-        do i = 1, nummol(j)
-            typ(j)%mol(i)%vel(:) = typ(j)%mol(i)%vel(:) * baiss
+        do i = 1, NUM_MOL(2)
+            typ(2)%mol(i)%vel(:) = typ(2)%mol(i)%vel(:) * baiss
         end do
     end subroutine scaling
 
@@ -554,18 +566,18 @@ program main
         integer :: i, j
         double precision :: t
         
-        t = dble(stpNow)*dt*1.0d-6 * 100 ! 100ステップおきに計測　単位は [ns]
+        t = dble(step_now)*dt*1.0d-6 * 100 ! 100ステップおきに計測　単位は [ns]
 
-        write(16, *) tlnkoss
-        write(16, '(A8, F4.1, A13, F4.1, A13, F4.1, A39, F6.3)') 'Lattice=', xsyul0, '0.0 0.0 0.0 ', &
-                ysyul0, '0.0 0.0 0.0 ', zsyul0, '"Properties="species:S1:pos:R:3" Time=', t
+        write(16, *) NUM_MOL_ALL
+        write(16, '(A8, F4.1, A13, F4.1, A13, F4.1, A39, F6.3)') 'Lattice=', BND_LEN_X0, '0.0 0.0 0.0 ', &
+                BND_LEN_Y0, '0.0 0.0 0.0 ', BND_LEN_Z0, '"Properties="species:S1:pos:R:3" Time=', t
         do j = 1, TYPMOL
             if(j == 2) then
-                do i = 1, nummol(j)
+                do i = 1, NUM_MOL(j)
                     write(16, '(A2, 3E15.7)') 'Ar', typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3)
                 end do
             else
-                do i = 1, nummol(j)
+                do i = 1, NUM_MOL(j)
                     write(16, '(A2, 3E15.7)') 'Pt', typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3)
                 end do
             end if
@@ -580,8 +592,8 @@ program main
         integer :: i, j, k, i1, i2
 
         integer, parameter :: SAFE = 2 ! 安全率
-        double precision :: rbook(5000, TYPMOL)
-        logical :: judge_same(5000, 5000, TYPMOL), judge_diff(nummol(1), nummol(2), TYPMOL)
+        double precision :: rbook(5000, TYPMOL) ! 5000は適当に決めました笑
+        logical :: judge_same(5000, 5000, TYPMOL), judge_diff(NUM_MOL(1), NUM_MOL(2), TYPMOL) ! 相互作用を計算する分子を区別するためのフラグ
 
         double precision :: rnd
         double precision :: div(3), dist
@@ -590,17 +602,17 @@ program main
         double precision :: vel, vmax(5000, TYPMOL), vene(3), sumvene
 
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
-                typ(j)%mol(i)%acc(:) = 0.0000d0
-                typ(j)%mol(i)%poten  = 0.0000d0
-                typ(j)%mol(i)%kinet  = 0.0000d0
+            do i = 1, NUM_MOL(j)
+                typ(j)%mol(i)%acc(:) = 0.0d0
+                typ(j)%mol(i)%pot  = 0.0d0
+                typ(j)%mol(i)%kin  = 0.0d0
             end do
         end do
-        interForce(:,:,:) = 0.000d0
+        force_inter(:,:,:) = 0.0d0
     
-        ! 粒子登録法のために出す速度
+        ! 粒子登録法で使うための速度
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 vel = dsqrt(typ(j)%mol(i)%vel(1)**2 + typ(j)%mol(i)%vel(2)**2 + typ(j)%mol(i)%vel(3)**2)
                 if(vmax(i,j) < vel) then
                     vmax(i,j) = vel
@@ -608,171 +620,172 @@ program main
             end do
         end do
 
-        ! 粒子登録法
-        ! 最大速度を更新
-        if(mod(stpNow,stpUpdate) == 1) then
-            do j = 1, TYPMOL
-                do i = 1, nummol(j)
-                    rbook(i,j) = CUTOFF*SIG(j) + SAFE*stpUpdate*vmax(i,j)*dt
-                    vmax(i,j) = 0.000d0
-                end do
+        ! 同じ分子同士の影響
+            ! 粒子登録法
+            if(mod(step_now,step_update) == 1) then ! 最大速度を更新
+                do j = 1, TYPMOL
+                    do i = 1, NUM_MOL(j)
+                        rbook(i,j) = CUTOFF*SIG(j) + SAFE*step_update*vmax(i,j)*dt
+                        vmax(i,j) = 0.0d0
+                    end do
 
-                do i1 = 1, nummol(j)
-                    do i2 = i1+1, nummol(j)
-                        div(:) = typ(j)%mol(i1)%pos(:) - typ(j)%mol(i2)%pos(:)
+                    do i1 = 1, NUM_MOL(j)
+                        do i2 = i1+1, NUM_MOL(j)
+                            div(:) = typ(j)%mol(i1)%pos(:) - typ(j)%mol(i2)%pos(:)
 
-                        do k = 1, 2
-                            if(div(k) < -syul(k)/2) then
-                                div(k) = div(k) + syul(k)
-                            else if(div(k) > syul(k)/2) then
-                                div(k) = div(k) - syul(k)
+                            do k = 1, 2
+                                if(div(k) < -bnd_len(k)/2) then
+                                    div(k) = div(k) + bnd_len(k)
+                                else if(div(k) > bnd_len(k)/2) then
+                                    div(k) = div(k) - bnd_len(k)
+                                end if
+                            end do
+
+                            dit2 = div(1)**2 + div(2)**2 + div(3)**2
+                            dist = dsqrt(dit2)
+
+                            if(rbook(i1,j) > dist .or. rbook(i2,j) > dist) then
+                                judge_same(i1,i2,j) = .true.
+                            else
+                                judge_same(i1,i2,j) = .false.
                             end if
                         end do
+                    end do
+                end do
+            end if
 
-                        dit2 = div(1)**2 + div(2)**2 + div(3)**2
-                        dist = dsqrt(dit2)
-
-                        if(rbook(i1,j) > dist .or. rbook(i2,j) > dist) then
-                            judge_same(i1,i2,j) = .true.
+            ! 分子間の相互作用力 → ポテンシャルエネルギー
+            do j = 1, TYPMOL
+                do i1 = 1, NUM_MOL(j)
+                    do i2 = i1+1, NUM_MOL(j)
+                        if(.not. judge_same(i1,i2,j)) then
+                            cycle
                         else
-                            judge_same(i1,i2,j) = .false.
+                            div(:) = typ(j)%mol(i1)%pos(:) - typ(j)%mol(i2)%pos(:)
+                            ! カットオフ
+                            do k = 1, 3
+                                if (div(k) < -cutoff(k)) then
+                                    div(k) = div(k) + bnd_len(k)
+                                else if(div(k) > cutoff(k)) then
+                                    div(k) = div(k) - bnd_len(k)
+                                endif
+                
+                                div(k) = div(k) / SIG(j)
+            
+                                if (abs(div(k)) > CUTOFF) then
+                                    cycle
+                                endif
+                            end do
+            
+                            dit2 = div(1)**2 + div(2)**2 + div(3)**2
+                            dist = dsqrt(dit2)
+
+                            if(dist > CUTOFF) then
+                                cycle
+                            endif
+            
+                            dit4   = dit2*dit2
+                            dit6   = dit4*dit2
+                            dit8   = dit4*dit4
+                            dit12  = dit6*dit6
+                            dit14  = dit8*dit6
+                            ppp    = 4.00d0*EPS(j)*(1.00d0/dit12-1.00d0/dit6)
+                            typ(j)%mol(i1)%pot = typ(j)%mol(i1)%pot + ppp*0.500d0
+                            typ(j)%mol(i2)%pot = typ(j)%mol(i2)%pot + ppp*0.500d0
+            
+                            force  = coef_force(j)*(-2.00d0/dit14+1.00d0/dit8)
+                            forVec(:) = -force*div(:)
+                            typ(j)%mol(i1)%acc(:) = typ(j)%mol(i1)%acc(:) + forVec(:)/MASS(j)
+                            typ(j)%mol(i2)%acc(:) = typ(j)%mol(i2)%acc(:) - forVec(:)/MASS(j)
                         end if
                     end do
                 end do
             end do
-        end if
-
-        ! 分子間の相互作用力 → ポテンシャルエネルギー
-        ! 同じ分子同士の影響
-        do j = 1, TYPMOL
-            do i1 = 1, nummol(j)
-                do i2 = i1+1, nummol(j)
-                    if(.not. judge_same(i1,i2,j)) then
-                        cycle
-                    else
-                        div(:) = typ(j)%mol(i1)%pos(:) - typ(j)%mol(i2)%pos(:)
-                        ! カットオフ
-                        do k = 1, 3
-                            if (div(k) < -cutof(k)) then
-                                div(k) = div(k) + syul(k)
-                            else if(div(k) > cutof(k)) then
-                                div(k) = div(k) - syul(k)
-                            endif
-            
-                            div(k) = div(k) / SIG(j)
-        
-                            if (abs(div(k)) > CUTOFF) then
-                                cycle
-                            endif
-                        end do
-        
-                        dit2 = div(1)**2 + div(2)**2 + div(3)**2
-                        dist = dsqrt(dit2)
-
-                        if(dist > CUTOFF) then
-                            cycle
-                        endif
-        
-                        dit4   = dit2*dit2
-                        dit6   = dit4*dit2
-                        dit8   = dit4*dit4
-                        dit12  = dit6*dit6
-                        dit14  = dit8*dit6
-                        ppp    = 4.00d0*EPS(j)*(1.00d0/dit12-1.00d0/dit6)
-                        typ(j)%mol(i1)%poten = typ(j)%mol(i1)%poten + ppp*0.500d0
-                        typ(j)%mol(i2)%poten = typ(j)%mol(i2)%poten + ppp*0.500d0
-        
-                        force  = forCoef(j)*(-2.00d0/dit14+1.00d0/dit8)
-                        forVec(:) = -force*div(:)
-                        typ(j)%mol(i1)%acc(:) = typ(j)%mol(i1)%acc(:) + forVec(:)/MASS(j)
-                        typ(j)%mol(i2)%acc(:) = typ(j)%mol(i2)%acc(:) - forVec(:)/MASS(j)
-                    end if
-                end do
-            end do
-        end do
     
-        if(mod(stpNow,stpUpdate) == 1) then
+        ! 異なる分子同士の影響
+            ! 粒子登録法
+            if(mod(step_now,step_update) == 1) then
+                do j = 1, TYPMOL
+                    if(j == 2) then
+                        cycle
+                    end if
+                    do i1 = 1, NUM_MOL(j) ! Pt
+                        do i2 = 1, NUM_MOL(2) ! Ar
+                            div(:) = typ(j)%mol(i1)%pos(:) - typ(2)%mol(i2)%pos(:)
+    
+                            do k = 1, 2
+                                if(div(k) < -bnd_len(k)/2) then
+                                    div(k) = div(k) + bnd_len(k)
+                                else if(div(k) > bnd_len(k)/2) then
+                                    div(k) = div(k) - bnd_len(k)
+                                end if
+                            end do
+
+                            dit2 = div(1)**2 + div(2)**2 + div(3)**2
+                            dist = dsqrt(dit2)
+
+                            if(rbook(i2,2) > dist) then     ! Arの条件のみでよい？
+                                judge_diff(i1,i2,j) = .true.
+                            else
+                                judge_diff(i1,i2,j) = .false.
+                            end if
+                        end do
+                    end do
+                end do
+            end if
+
+            ! Ar-Ptの処理    配列は1が上Pt, 2がAr, 3がしたPt
             do j = 1, TYPMOL
                 if(j == 2) then
                     cycle
                 end if
-                do i1 = 1, nummol(j) ! Pt
-                    do i2 = 1, nummol(2) ! Ar
-                        div(:) = typ(j)%mol(i1)%pos(:) - typ(2)%mol(i2)%pos(:)
- 
-                        do k = 1, 2
-                            if(div(k) < -syul(k)/2) then
-                                div(k) = div(k) + syul(k)
-                            else if(div(k) > syul(k)/2) then
-                                div(k) = div(k) - syul(k)
-                            end if
-                        end do
-
-                        dit2 = div(1)**2 + div(2)**2 + div(3)**2
-                        dist = dsqrt(dit2)
-
-                        if(rbook(i2,2) > dist) then     ! Arの条件のみでよい？
-                            judge_diff(i1,i2,j) = .true.
+                do i1 = 1, NUM_MOL(j)       ! Pt
+                    do i2 = 1, NUM_MOL(2)    ! Ar
+                        if(.not. judge_diff(i1,i2,j)) then
+                            cycle
                         else
-                            judge_diff(i1,i2,j) = .false.
+                            div(:) = typ(j)%mol(i1)%pos(:) - typ(2)%mol(i2)%pos(:)
+                
+                            do k = 1, 3
+                                if (div(k) < -cutoff(k)) then
+                                    div(k) = div(k) + bnd_len(k)
+                                else if(div(k) > cutoff(k)) then
+                                    div(k) = div(k) - bnd_len(k)
+                                endif
+                
+                                div(k) = div(k) / SIG(4)
+                
+                                if (abs(div(k)) > CUTOFF) then
+                                    cycle
+                                endif
+                            end do
+                
+                            dit2 = div(1)**2 + div(2)**2 + div(3)**2
+                            dist = dsqrt(dit2)
+                
+                            if(dist > CUTOFF) then
+                                cycle
+                            endif
+                
+                            dit4   = dit2*dit2
+                            dit6   = dit4*dit2
+                            dit8   = dit4*dit4
+                            dit12  = dit6*dit6
+                            dit14  = dit8*dit6
+                            ppp    = INTER_STG*4.00d0*EPS(4)*(1.00d0/dit12-1.00d0/dit6) ! 異分子間ではangCon(接触角)を忘れずに
+                            typ(j)%mol(i1)%pot = typ(j)%mol(i1)%pot + ppp*0.500d0
+                            typ(2)%mol(i2)%pot = typ(2)%mol(i2)%pot + ppp*0.500d0
+                
+                            force  = coef_force(4)*(-2.00d0/dit14+1.00d0/dit8)
+                            forVec(:) = -force*div(:)
+                            force_inter(i1,j,:) = force_inter(i1,j,:) - forVec(:) ! 無次元なことに注意　符号が逆な気がする
+                
+                            typ(j)%mol(i1)%acc(:) = typ(j)%mol(i1)%acc(:) + forVec(:)/MASS(j)
+                            typ(2)%mol(i2)%acc(:) = typ(2)%mol(i2)%acc(:) - forVec(:)/MASS(2)
                         end if
                     end do
                 end do
             end do
-        end if
-
-       ! 異なる分子同士の影響  ! Ar-Ptの処理    配列は1が上Pt, 2がAr, 3がしたPt
-        do j = 1, TYPMOL
-            if(j == 2) then
-                cycle
-            end if
-            do i1 = 1, nummol(j)       ! Pt
-                do i2 = 1, nummol(2)    ! Ar
-                    if(.not. judge_diff(i1,i2,j)) then
-                        cycle
-                    else
-                        div(:) = typ(j)%mol(i1)%pos(:) - typ(2)%mol(i2)%pos(:)
-            
-                        do k = 1, 3
-                            if (div(k) < -cutof(k)) then
-                                div(k) = div(k) + syul(k)
-                            else if(div(k) > cutof(k)) then
-                                div(k) = div(k) - syul(k)
-                            endif
-            
-                            div(k) = div(k) / SIG(4)
-            
-                            if (abs(div(k)) > CUTOFF) then
-                                cycle
-                            endif
-                        end do
-            
-                        dit2 = div(1)**2 + div(2)**2 + div(3)**2
-                        dist = dsqrt(dit2)
-            
-                        if(dist > CUTOFF) then
-                            cycle
-                        endif
-            
-                        dit4   = dit2*dit2
-                        dit6   = dit4*dit2
-                        dit8   = dit4*dit4
-                        dit12  = dit6*dit6
-                        dit14  = dit8*dit6
-                        ppp    = angCon*4.00d0*EPS(4)*(1.00d0/dit12-1.00d0/dit6) ! 異分子間ではangCon(接触角)を忘れずに
-                        typ(j)%mol(i1)%poten = typ(j)%mol(i1)%poten + ppp*0.500d0
-                        typ(2)%mol(i2)%poten = typ(2)%mol(i2)%poten + ppp*0.500d0
-            
-                        force  = forCoef(4)*(-2.00d0/dit14+1.00d0/dit8)
-                        forVec(:) = -force*div(:)
-                        interForce(i1,j,:) = interForce(i1,j,:) - forVec(:) ! 無次元なことに注意　符号が逆な気がする
-            
-                        typ(j)%mol(i1)%acc(:) = typ(j)%mol(i1)%acc(:) + forVec(:)/MASS(j)
-                        typ(2)%mol(i2)%acc(:) = typ(2)%mol(i2)%acc(:) - forVec(:)/MASS(2)
-                    end if
-                end do
-            end do
-        end do
     
         ! PtのPhantom層はダンパー力とランダム力を付与
         do j = 1, TYPMOL
@@ -780,25 +793,25 @@ program main
                 cycle
             end if
     
-            do i = numx(j)*numy(j) + 1, 2*numx(j)*numy(j) ! Phantom層のみ
+            do i = NUM_X(j)*NUM_Y(j) + 1, 2*NUM_X(j)*NUM_Y(j) ! Phantom層のみ
                 do k = 1, 3
                     rnd = Random() 
                     ! ランダム力
-                    rndForce(i,j,k) = rnd * getStddev(tempLanPt(j)) ! 標準偏差を無次元化したまま扱う
+                    force_rand(i,j,k) = rnd * getStddev(TEMP_Langevin(j)) ! 標準偏差を無次元化したまま扱う
                     ! ダンパー力
-                    dmpForce(i,j,k) = -DAMP * typ(j)%mol(i)%vel(k) * 1.0d+14 ! ダンパー力を無次元化したまま扱う
+                    force_damp(i,j,k) = -DAMP * typ(j)%mol(i)%vel(k) * 1.0d+14 ! ダンパー力を無次元化したまま扱う
                 end do
                 ! ランダム力とダンパー力を追加
-                typ(j)%mol(i)%acc(:) = typ(j)%mol(i)%acc(:) + (rndForce(i,j,:) + dmpForce(i,j,:)) / MASS(j)*1.0d-3 ! -9+26-20 = -3  (ランダム, ダンパー力の有次元化-9)*(質量の有次元化+26)*(加速度の無次元化-20)
+                typ(j)%mol(i)%acc(:) = typ(j)%mol(i)%acc(:) + (force_rand(i,j,:) + force_damp(i,j,:)) / MASS(j)*1.0d-3 ! -9+26-20 = -3  (ランダム, ダンパー力の有次元化-9)*(質量の有次元化+26)*(加速度の無次元化-20)
             end do
         end do
 
         ! 運動エネルギー計算
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 typ(j)%mol(i)%vtmp(:) = typ(j)%mol(i)%vel(:) + typ(j)%mol(i)%acc(:)*0.500d0*dt ! vel(t) = vel(t-dt/2) + acc(t)*dt/2
                 sumvene = typ(j)%mol(i)%vtmp(1)**2 + typ(j)%mol(i)%vtmp(2)**2 + typ(j)%mol(i)%vtmp(3)**2
-                typ(j)%mol(i)%kinet = 0.500d0*MASS(j)*sumvene
+                typ(j)%mol(i)%kin = 0.500d0*MASS(j)*sumvene
             end do
         end do
     end subroutine calc_force_potential
@@ -809,42 +822,40 @@ program main
         use molecules_struct
         implicit none
         integer :: i, j
-        integer :: cnt(numSlide, TYPMOL) ! ensembleHeatの配列に入れる用のカウント
-        integer :: stp
+        integer :: cnt(NUM_SLIDE, TYPMOL) ! ensembleHeatの配列に入れる用のカウント
+        integer :: step
 
-        scalarHeat(:,:) = 0.000d0
-        nowHeat(:) = 0.000d0  ! 熱ゆらぎをするためにリセット　NEMDでは積算するのでここはなし
+        heat_scalar(:,:) = 0.0d0
+        heat_now(:) = 0.0d0  ! 熱ゆらぎをするためにリセット　NEMDでは積算するのでここはなし
 
         do j = 1, TYPMOL
             if (j == 2) then
                 cycle
             end if
             
-            do i = numx(j)*numy(j) + 1, nummol(j) ! 固定層を除いたPt分子全体
-                oneHeat(i) = interForce(i,j,3) * typ(j)%mol(i)%vtmp(3)
-                nowHeat(j) = nowHeat(j) + oneHeat(i)
+            do i = NUM_X(j)*NUM_Y(j) + 1, NUM_MOL(j) ! 固定層を除いたPt分子全体
+                heat_one(i) = force_inter(i,j,1) * typ(j)%mol(i)%vtmp(1) + force_inter(i,j,2) * typ(j)%mol(i)%vtmp(2) + force_inter(i,j,3) * typ(j)%mol(i)%vtmp(3)
+                heat_now(j) = heat_now(j) + heat_one(i)
             end do
             
-            nowHeat(j) = nowHeat(j) / areaPt    ! 面積はrecordの方でもいい
+            heat_now(j) = heat_now(j) / AREA_Pt    ! 面積はrecordの方でもいい
 
-            ! do i = 1, numSlide
-            !     stp = stpNow-stpScaling-stpRelax - (i-1)*stpSlide
-            !     if(stp > 0 .and. stp <= stpMeasure) then
-            !         if(mod(stp, stpInterval) == 1) then
-            !             if(mod(stp, stpPlot) == 1) then
-            !                 zeroHeat(i,j) = nowHeat(j)
-            !                 cnt(i,j) = 0
-            !             end if
+            do i = 1, NUM_SLIDE
+                step = step_now-step_scaling-step_relax - (i-1)*step_slide
+                if(step > 0 .and. step <= step_measure) then
+                    if(mod(step, step_interval) == 1) then
+                        if(mod(step, step_plot) == 1) then
+                            heat_zero(i,j) = heat_now(j)
+                            cnt(i,j) = 0
+                        end if
 
-            !             scalarHeat(i,j) = scalarHeat(i,j) + nowHeat(j) * zeroHeat(i,j)
+                        heat_scalar(i,j) = heat_scalar(i,j) + heat_now(j) * heat_zero(i,j)
 
-            !             cnt(i,j) = cnt(i,j) + 1
-            !             ensembleHeat(cnt(i,j),j) = ensembleHeat(cnt(i,j),j) + scalarHeat(i,j)
-
-            !             ! write(69,'(2I7, 2I4, 2E15.7)') stpNow, stp, i, cnt(i,j), zeroHeat(i,j), nowHeat(j)
-            !         end if
-            !     end if
-            ! end do
+                        cnt(i,j) = cnt(i,j) + 1
+                        heat_ensemble(cnt(i,j),j) = heat_ensemble(cnt(i,j),j) + heat_scalar(i,j)
+                    end if
+                end if
+            end do
         end do
     end subroutine calc_heatflux
 
@@ -859,19 +870,19 @@ program main
         do j = 1, TYPMOL
             ! Arの計算
             if(j == 2) then
-                do i = 1, nummol(2)
+                do i = 1, NUM_MOL(2)
                     typ(2)%mol(i)%vel(:) = typ(2)%mol(i)%vel(:) + typ(2)%mol(i)%acc(:) * dt   ! vel(t+dt/2) = vel(t-dt/2) + acc(t)*dt
                     typ(2)%mol(i)%pos(:) = typ(2)%mol(i)%pos(:) + typ(2)%mol(i)%vel(:) * dt   ! pos(t+dt)   = pos(t)      + vel(t+dt/2)*dt
                 end do
             else
             ! Ptの計算
                 ! 固定層
-                do i = 1, numx(j)*numy(j)
-                    typ(j)%mol(i)%vel(:) = 0.0000d0
+                do i = 1, NUM_X(j)*NUM_Y(j)
+                    typ(j)%mol(i)%vel(:) = 0.0d0
                 end do
     
                 ! その他の層
-                do i = numx(j)*numy(j) + 1, int(nummol(j))
+                do i = NUM_X(j)*NUM_Y(j) + 1, int(NUM_MOL(j))
                     typ(j)%mol(i)%vel(:) = typ(j)%mol(i)%vel(:) + typ(j)%mol(i)%acc(:) * dt
                     typ(j)%mol(i)%pos(:) = typ(j)%mol(i)%pos(:) + typ(j)%mol(i)%vel(:) * dt
                 end do
@@ -886,24 +897,24 @@ program main
         implicit none
         integer :: i, j
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 if(typ(j)%mol(i)%pos(1) < 0.00d0) then
-                    typ(j)%mol(i)%pos(1) = typ(j)%mol(i)%pos(1) + syul(1)
-                else if(typ(j)%mol(i)%pos(1) > syul(1)) then
-                    typ(j)%mol(i)%pos(1) = typ(j)%mol(i)%pos(1) - syul(1)
+                    typ(j)%mol(i)%pos(1) = typ(j)%mol(i)%pos(1) + bnd_len(1)
+                else if(typ(j)%mol(i)%pos(1) > bnd_len(1)) then
+                    typ(j)%mol(i)%pos(1) = typ(j)%mol(i)%pos(1) - bnd_len(1)
                 endif
 
                 if(typ(j)%mol(i)%pos(2) < 0.00d0) then
-                    typ(j)%mol(i)%pos(2) = typ(j)%mol(i)%pos(2) + syul(2)
-                else if(typ(j)%mol(i)%pos(2) > syul(2)) then
-                    typ(j)%mol(i)%pos(2) = typ(j)%mol(i)%pos(2) - syul(2)
+                    typ(j)%mol(i)%pos(2) = typ(j)%mol(i)%pos(2) + bnd_len(2)
+                else if(typ(j)%mol(i)%pos(2) > bnd_len(2)) then
+                    typ(j)%mol(i)%pos(2) = typ(j)%mol(i)%pos(2) - bnd_len(2)
                 endif
 
                 ! z方向は周期境界の補正を行わない
                 ! if(typ(j)%mol(i)%pos(3) < 0.00d0) then
-                !     typ(j)%mol(i)%pos(3) = typ(j)%mol(i)%pos(3) + syul(3)
-                ! else if(typ(j)%mol(i)%pos(3) > syul(3)) then
-                !     typ(j)%mol(i)%pos(3) = typ(j)%mol(i)%pos(3) - syul(3)
+                !     typ(j)%mol(i)%pos(3) = typ(j)%mol(i)%pos(3) + bnd_len(3)
+                ! else if(typ(j)%mol(i)%pos(3) > bnd_len(3)) then
+                !     typ(j)%mol(i)%pos(3) = typ(j)%mol(i)%pos(3) - bnd_len(3)
                 ! endif
             end do
         end do
@@ -916,37 +927,37 @@ program main
         implicit none
         integer :: i, j
     
-        do i = 1, nummol(1)
+        do i = 1, NUM_MOL(1)
             ! posit_PtUp.dat
             write(10, '(I6, 3E15.7)') i, typ(1)%mol(i)%pos(1), typ(1)%mol(i)%pos(2), typ(1)%mol(i)%pos(3)
             ! veloc_PtUp.dat
             write(20, '(I6, 3E15.7)') i, typ(1)%mol(i)%vel(1), typ(1)%mol(i)%vel(2), typ(1)%mol(i)%vel(3)
         end do
-        do i = 1, nummol(2)
+        do i = 1, NUM_MOL(2)
             ! posit_Ar.dat
             write(11, '(I6, 3E15.7)') i, typ(2)%mol(i)%pos(1), typ(2)%mol(i)%pos(2), typ(2)%mol(i)%pos(3)
             ! veloc_Ar.dat
             write(21, '(I6, 3E15.7)') i, typ(2)%mol(i)%vel(1), typ(2)%mol(i)%vel(2), typ(2)%mol(i)%vel(3)
         end do
-        do i = 1, nummol(3)
+        do i = 1, NUM_MOL(3)
             ! posit_PtLw.dat
             write(12, '(I6, 3E15.7)') i, typ(3)%mol(i)%pos(1), typ(3)%mol(i)%pos(2), typ(3)%mol(i)%pos(3)
             ! veloc_PtLw.dat
             write(22, '(I6, 3E15.7)') i, typ(3)%mol(i)%vel(1), typ(3)%mol(i)%vel(2), typ(3)%mol(i)%vel(3)
         end do
     
-        do i = numx(1)*numy(1) + 1, 2*numx(1)*numy(1) ! Phantom層
-            write(70, '(I6, 6E15.7)') i, rndForce(i,1,1)*1.0d-9, rndForce(i,1,2)*1.0d-9, rndForce(i,1,3)*1.0d-9, &
-                                         dmpForce(i,1,1)*1.0d-9, dmpForce(i,1,2)*1.0d-9, dmpForce(i,1,3)*1.0d-9
+        do i = NUM_X(1)*NUM_Y(1) + 1, 2*NUM_X(1)*NUM_Y(1) ! Phantom層
+            write(70, '(I6, 6E15.7)') i, force_rand(i,1,1)*1.0d-9, force_rand(i,1,2)*1.0d-9, force_rand(i,1,3)*1.0d-9, &
+                                         force_damp(i,1,1)*1.0d-9, force_damp(i,1,2)*1.0d-9, force_damp(i,1,3)*1.0d-9
         end do
     
-        do i = 1, nummol(1)!(numz(1)-1)*numx(1)*numy(1) + 1, nummol(1) ! 固液界面層
-            write(71, '(I6, 3E15.7)') i, interForce(i,1,1)*1.0d-6, interForce(i,1,2)*1.0d-6, interForce(i,1,3)*1.0d-6 ! 上Pt, Ar, 下Pt
+        do i = 1, NUM_MOL(1)!(NUM_Z(1)-1)*NUM_X(1)*NUM_Y(1) + 1, NUM_MOL(1) ! 固液界面層
+            write(71, '(I6, 3E15.7)') i, force_inter(i,1,1)*1.0d-6, force_inter(i,1,2)*1.0d-6, force_inter(i,1,3)*1.0d-6 ! 上Pt, Ar, 下Pt
         end do
     
-        ! ! 可視化用
+        ! PVWIN用
         ! do j = 1, TYPMOL
-        !     do i = 1, nummol(j)
+        !     do i = 1, NUM_MOL(j)
         !         ! pos.dat
         !         write(15, '(3E15.7)') typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3)
         !     end do
@@ -958,112 +969,99 @@ program main
         use variable
         use molecules_struct
         implicit none
-        double precision, dimension(TYPMOL) :: totEne, totPot, totKin, temp
-        double precision :: allEne, allPot, allKin
-        double precision :: kinPtTmp, kinArTmp(numDivAr)
-        integer :: cnt(numDivAr)
-        double precision :: tempLayerPt_(numz(1),TYPMOL)
-        double precision :: tempLayerAr_(numDivAr)
+        double precision, dimension(TYPMOL) :: ene_sum, pot_sum, kin_sum, temp
+        double precision :: ene_all, pot_all, kin_all
+        double precision :: kin_Pt_tmp, kin_Ar_tmp(NUM_DIV_Ar)
+        integer :: cnt(NUM_DIV_Ar)
+        double precision :: temp_layer_Pt_(NUM_Z(1),TYPMOL)
+        double precision :: temp_layer_Ar_(NUM_DIV_Ar)
         integer :: i, j, k
-        integer :: stp
-        stp = stpNow-stpRelax-stpScaling
+        integer :: step
+        step = step_now-step_relax-step_scaling
     
-        allEne = 0.000d0
-        allPot = 0.000d0
-        allKin = 0.000d0
-        totEne(:) = 0.000d0
-        totPot(:) = 0.000d0
-        totKin(:) = 0.000d0
-        temp(:) = 0.000d0
-        tempLayerPt_(:,:) = 0.000d0
-        tempLayerAr_(:) = 0.000d0
+        ene_all = 0.0d0
+        pot_all = 0.0d0
+        kin_all = 0.0d0
+        ene_sum(:) = 0.0d0
+        pot_sum(:) = 0.0d0
+        kin_sum(:) = 0.0d0
+        temp(:) = 0.0d0
+        temp_layer_Pt_(:,:) = 0.0d0
+        temp_layer_Ar_(:) = 0.0d0
     
         do j = 1, TYPMOL
             ! ポテンシャル
-            do i = 1, nummol(j)
-                totPot(j) = totPot(j) + typ(j)%mol(i)%poten
+            do i = 1, NUM_MOL(j)
+                pot_sum(j) = pot_sum(j) + typ(j)%mol(i)%pot
             end do
-            totPot(j) = totPot(j) * 1.000d-16
+            pot_sum(j) = pot_sum(j) * 1.0d-16
     
             ! 運動エネルギー
             if (j == 2) then
-                ! Ar
-                ! do i = 1, nummol(j)
-                !     totKin(j) = totKin(j) + typ(j)%mol(i)%kinet
-                ! end do
-                ! totKin(j) = totKin(j) * 1.000d-16
-                ! temp(j) = 2.0d0 * totKin(j) / (3.0d0 * dble(nummol(j)) * BOLTZ)
-    
-                kinArTmp(:) = 0.000d0
+            ! Arの温度
+                kin_Ar_tmp(:) = 0.0d0 ! 各領域のAr分子の運動エネルギーを足すための変数
                 cnt(:) = 0
-                do i = 1, nummol(j)
-                    do k = 1, numDivAr
-                        if ( (k-1)*zdiv <= (typ(j)%mol(i)%pos(3) - thick(3)) .and. (typ(j)%mol(i)%pos(3) - thick(3)) < k*zdiv) then
-                            kinArTmp(k) = kinArTmp(k) + typ(j)%mol(i)%kinet
+                do i = 1, NUM_MOL(j)
+                    do k = 1, NUM_DIV_Ar
+                        if ( (k-1)*LEN_DIV_Ar <= (typ(j)%mol(i)%pos(3) - THICK(3)) .and. (typ(j)%mol(i)%pos(3) - THICK(3)) < k*LEN_DIV_Ar) then
+                            kin_Ar_tmp(k) = kin_Ar_tmp(k) + typ(j)%mol(i)%kin
                             cnt(k) = cnt(k) + 1
                             cycle
                         end if
                     end do
                 end do
     
-                do k = 1, numDivAr
-                    kinArTmp(k) = kinArTmp(k) * 1.000d-16
-                    totKin(j) = totKin(j) + kinArtmp(k)
-                    tempLayerAr_(k) = 2.0d0 * kinArTmp(k) / (3.0d0 * dble(cnt(k)) * BOLTZ)
-                    temp(j) = temp(j) + tempLayerAr_(k)
+                do k = 1, NUM_DIV_Ar
+                    kin_Ar_tmp(k) = kin_Ar_tmp(k) * 1.0d-16
+                    kin_sum(j) = kin_sum(j) + kin_Ar_tmp(k)
+                    temp_layer_Ar_(k) = 2.000d0 * kin_Ar_tmp(k) / (3.000d0 * dble(cnt(k)) * BOLTZ)
+                    temp(j) = temp(j) + temp_layer_Ar_(k)
                 end do
     
-                temp(j) = temp(j) / dble(numDivAr)
+                temp(j) = temp(j) / dble(NUM_DIV_Ar)
             else
-                ! Pt
-                do k = 2, numz(j) ! Ptの層の数
-                    kinPtTmp = 0.000d0
-                    do i = (k-1)*numx(j)*numy(j) + 1, k*numx(j)*numy(j)
-                        kinPtTmp = kinPtTmp + typ(j)%mol(i)%kinet
+            ! Ptの温度
+                do k = 2, NUM_Z(j) ! Ptの層の数
+                    kin_Pt_tmp = 0.0d0
+                    do i = (k-1)*NUM_X(j)*NUM_Y(j) + 1, k*NUM_X(j)*NUM_Y(j)
+                        kin_Pt_tmp = kin_Pt_tmp + typ(j)%mol(i)%kin
                     end do
     
-                    kinPtTmp = kinPtTmp * 1.000d-16
-                    totKin(j) = totKin(j) + kinPtTmp
-                    tempLayerPt_(k, j) = 2.0d0 * kinPtTmp / (3.0d0 * dble(numx(j)*numy(j)) * BOLTZ)
-                    temp(j) = temp(j) + tempLayerPt_(k, j)
+                    kin_Pt_tmp = kin_Pt_tmp * 1.0d-16
+                    kin_sum(j) = kin_sum(j) + kin_Pt_tmp
+                    temp_layer_Pt_(k, j) = 2.000d0 * kin_Pt_tmp / (3.000d0 * dble(NUM_X(j)*NUM_Y(j)) * BOLTZ)
+                    temp(j) = temp(j) + temp_layer_Pt_(k, j)
                 end do
     
-                temp(j) = temp(j) / dble(numz(j)-1)
+                temp(j) = temp(j) / dble(NUM_Z(j)-1)
             end if
     
-            totEne(j) = totPot(j) + totKin(j)
-            allEne = allEne + totEne(j)
-            allPot = allPot + totPot(j)
-            allKin = allKin + totKin(j)
+            ene_sum(j) = pot_sum(j) + kin_sum(j)
+            ene_all = ene_all + ene_sum(j)
+            pot_all = pot_all + pot_sum(j)
+            kin_all = kin_all + kin_sum(j)
         end do
     
-        if(stpNow > stpScaling + stpRelax) then
+        if(step_now > step_scaling + step_relax) then
             do j = 1, TYPMOL
                 if(j == 2) then
-                    do i = 1, numDivAr
-                        tempLayerAr(i) = tempLayerAr(i) + tempLayerAr_(i)
+                    do i = 1, NUM_DIV_Ar
+                        temp_layer_Ar(i) = temp_layer_Ar(i) + temp_layer_Ar_(i)
                     end do
                 else
-                    do i = 2, numz(j)
-                        tempLayerPt(i,j) = tempLayerPt(i,j) + tempLayerPt_(i,j)
+                    do i = 2, NUM_Z(j)
+                        temp_layer_Pt(i,j) = temp_layer_Pt(i,j) + temp_layer_Pt_(i,j)
                     end do
                 end if
             end do
         end if
     
-        write(30, '(5E15.7)') stpNow*int(dt)*1.0d-6, totEne(1), totPot(1), totKin(1)  ! energy_PtUp.dat
-        write(31, '(5E15.7)') stpNow*int(dt)*1.0d-6, totEne(2), totPot(2), totKin(2)  ! energy_Ar.dat
-        write(32, '(5E15.7)') stpNow*int(dt)*1.0d-6, totEne(3), totPot(3), totKin(3)  ! energy_PtLw.dat
-        write(35, '(5E15.7)') stpNow*int(dt)*1.0d-6, allEne, allPot, allKin           ! energy_all.dat
-        write(40, '(5E15.7)') stpNow*int(dt)*1.0d-6, temp(1), temp(2), temp(3)        ! tempe.dat
-    
-        ! !!!!!!!!!Pt層を増やすとき必ず変更すること!!!!!!!!!
-        ! write(41, '(5E15.7)') stpNow*int(dt)*1.0d-6, tempLayerPt_(1,1), tempLayerPt_(2,1), tempLayerPt_(3,1), tempLayerPt_(4,1)
-        ! write(42, '(16E15.7)') stpNow*int(dt)*1.0d-6, tempLayerAr_(1), tempLayerAr_(2), tempLayerAr_(3), tempLayerAr_(4)&
-        !                                          , tempLayerAr_(5), tempLayerAr_(6), tempLayerAr_(7), tempLayerAr_(8)&
-        !                                          , tempLayerAr_(9), tempLayerAr_(10), tempLayerAr_(11), tempLayerAr_(12)&
-        !                                          , tempLayerAr_(13), tempLayerAr_(14), tempLayerAr_(15)
-        ! write(43, '(5E15.7)') stpNow*int(dt)*1.0d-6, tempLayerPt_(1,3), tempLayerPt_(2,3), tempLayerPt_(3,3), tempLayerPt_(4,3)
+        write(30, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(1), pot_sum(1), kin_sum(1)  ! energy_PtUp.dat
+        write(31, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(2), pot_sum(2), kin_sum(2)  ! energy_Ar.dat
+        write(32, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(3), pot_sum(3), kin_sum(3)  ! energy_PtLw.dat
+        write(35, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_all, pot_all, kin_all           ! energy_all.dat
+        write(40, '(5E15.7)') step_now*int(dt)*1.0d-6, temp(1), temp(2), temp(3)        ! temp.dat
+
     end subroutine record_energy_temp
     
     subroutine record_pressure_heatflux ! 熱流束を記録
@@ -1072,37 +1070,34 @@ program main
         use molecules_struct
         implicit none
         integer :: i, j
-        ! double precision :: heatfluxPhantom(TYPMOL) ! Phantom層からの熱輸送量
-        double precision :: heatfluxInterface(TYPMOL) ! 固液界面での熱輸送量
+        ! double precision :: heat_phantom_sum(TYPMOL) ! Phantom層からの熱輸送量
+        double precision :: heat_interface_sum(TYPMOL) ! 固液界面での熱輸送量
         double precision :: pressure(TYPMOL) ! 圧力
-        integer :: stp
-        stp = stpNow-stpRelax-stpScaling
+        integer :: step
+        step = step_now-step_relax-step_scaling
 
-        heatfluxInterface(:) = 0.000d0
-        pressure(:) = 0.000d0
+        heat_interface_sum(:) = 0.0d0
+        pressure(:) = 0.0d0
 
         do j = 1, TYPMOL
             if (j == 2) then
                 cycle
             end if
-            heatfluxInterface(j) = nowHeat(j) * 1.0d-6 * 1.0d+5 / 1.0d-20 ! 面積の有次元化 10^-20
+            heat_interface_sum(j) = heat_now(j) * 1.0d-6 * 1.0d+5 / 1.0d-20 ! 面積の有次元化 10^-20
 
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 if(j == 1) then
-                    pressure(1) = pressure(1) + interForce(i,1,3) / areaPt * 1.0d+8 ! [MPa]　-6+20-6 = +8  (相互作用力-6)*(面積の逆数+20)*(メガ-6)
+                    pressure(1) = pressure(1) + force_inter(i,1,3) / AREA_Pt * 1.0d+8 ! [MPa]　-6+20-6 = +8  (相互作用力-6)*(面積の逆数+20)*(メガ-6)
                 else
-                    pressure(3) = pressure(3) - interForce(i,3,3) / areaPt * 1.0d+8
+                    pressure(3) = pressure(3) - force_inter(i,3,3) / AREA_Pt * 1.0d+8
                 end if
             end do
         end do
     
-        write(61,'(4E15.7)') stp*int(dt)*1.0d-6, pressure(1), pressure(2), pressure(3)
+        write(61,'(4E15.7)') step*int(dt)*1.0d-6, pressure(1), pressure(2), pressure(3)
 
-        write(64,'(2E15.7)') stp*int(dt)*1.0d-6, heatfluxInterface(1)
-        write(65,'(2E15.7)') stp*int(dt)*1.0d-6, heatfluxInterface(3)
-    
-        ! write(62,'(2E15.7)') stp*int(dt)*1.0d-6, scalarHeat(1)
-        ! write(63,'(2E15.7)') stp*int(dt)*1.0d-6, scalarHeat(3)
+        write(64,'(2E15.7)') step*int(dt)*1.0d-6, heat_interface_sum(1)
+        write(65,'(2E15.7)') step*int(dt)*1.0d-6, heat_interface_sum(3)
     end subroutine record_pressure_heatflux
 
     subroutine record_final ! 最終状態を記録
@@ -1115,18 +1110,18 @@ program main
     
         do j = 1, TYPMOL
             if(j == 2) then
-                do i = 1, numDivAr
-                    tempLayerAr(i) = tempLayerAr(i) / dble(stpMeasure/100)
+                do i = 1, NUM_DIV_Ar
+                    temp_layer_Ar(i) = temp_layer_Ar(i) / dble(step_measure/100)
                 end do
             else
-                do i = 2, numz(j)
-                    tempLayerPt(i,j) = tempLayerPt(i,j) / dble(stpMeasure/100)
+                do i = 2, NUM_Z(j)
+                    temp_layer_Pt(i,j) = temp_layer_Pt(i,j) / dble(step_measure/100)
                 end do
             end if
         end do
         
         do j = 1, TYPMOL
-            do i = 1, nummol(j)
+            do i = 1, NUM_MOL(j)
                 ! syuuki.dat
                 write(50, '(I6, 6E15.7)') & 
                 i, typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3), &
@@ -1134,39 +1129,48 @@ program main
             end do
         end do
     
-        disz = STDIST(3)*0.25d0
-        do i = 2, numz(3)   ! 固定層は除外
-            disz = disz + STDIST(3)*0.5d0
-            write(45, '(2E15.7)') disz, tempLayerPt(i,3)
+        disz = ST_DIST(3)*0.25d0
+        do i = 2, NUM_Z(3)   ! 固定層は除外
+            disz = disz + ST_DIST(3)*0.5d0
+            write(45, '(2E15.7)') disz, temp_layer_Pt(i,3)
         end do
     
-        disz = disz - zdiv * 0.5d0
-        do i = 1, numDivAr
-            disz = disz + zdiv
-            write(45, '(2E15.7)') disz, tempLayerAr(i)
+        disz = disz - LEN_DIV_Ar * 0.5d0
+        do i = 1, NUM_DIV_Ar
+            disz = disz + LEN_DIV_Ar
+            write(45, '(2E15.7)') disz, temp_layer_Ar(i)
         end do
     
-        disz = zsyul0 - STDIST(1)*0.25d0
-        do i = 2, numz(1)
-            disz = disz - STDIST(1)*0.5d0
-            write(45, '(2E15.7)') disz, tempLayerPt(i,1)
+        disz = BND_LEN_Z0 - ST_DIST(1)*0.25d0
+        do i = 2, NUM_Z(1)
+            disz = disz - ST_DIST(1)*0.5d0
+            write(45, '(2E15.7)') disz, temp_layer_Pt(i,1)
         end do
     
-        ! ! EMD の界面熱抵抗の計算
-        ! do j = 1, TYPMOL
-        !     if(j == 2) then
-        !         cycle
-        !     end if
+        ! EMD の界面熱抵抗の計算
+        do j = 1, TYPMOL
+            if(j == 2) then
+                cycle
+            end if
 
-        !     do k = 1, plot
-        !         ensembleHeat(k,j) = ensembleHeat(k,j) / dble(numEnsemble*numSlide)
-        !         ensembleHeat(k,j) = ensembleHeat(k,j) / 1.000d-40
-        !         if(j == 1) then
-        !             write(81, '(1E13.6, 1E15.7)') dble(k)*timeInterval, ensembleHeat(k,1)
-        !         else
-        !             write(82, '(1E13.6, 1E15.7)') dble(k)*timeInterval, ensembleHeat(k,3)
-        !         end if
-        !     end do
-        ! end do
+            do k = 1, NUM_PLOT
+                heat_ensemble(k,j) = heat_ensemble(k,j) / dble(NUM_ENSEMBLE*NUM_SLIDE)
+                heat_ensemble(k,j) = heat_ensemble(k,j) / 1.0d-40
+                if(j == 1) then
+                    write(81, '(1E13.6, 1E15.7)') dble(k)*time_interval, heat_ensemble(k,1)
+                else
+                    write(82, '(1E13.6, 1E15.7)') dble(k)*time_interval, heat_ensemble(k,3)
+                end if
+            end do
+        end do
     end subroutine record_final
 end program main
+
+!--------追記--------!
+! nemd.f90は非平衡分子動力学（NEMD）用です
+! emd.f90は平衡分子動力学（EMD）用です
+
+! 自己相関関数（ACF）の計算は初めはFortranで行っていましたが、のちにPythonで行うようになるため、熱流束の記録以外はコメントアウトしても構いません
+
+! ACFを収束させるためにはかなりのアンサンブル数が必要です（具体的には1000万～1億程度）
+! 計算時間を削減するために、熱流束を記録する間隔（time_slide）は 0.001 ps にしておきましょう

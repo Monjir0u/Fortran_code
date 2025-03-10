@@ -16,7 +16,7 @@
 
 module parameters
     implicit none
-!--------------- よく変更する---------------------!
+    !--------------- よく変更する---------------------!
     ! 計算時間
     double precision, parameter :: time_scaling = 0.1d0 ! スケーリング時間 [ns]
     double precision, parameter :: time_relax   = 1.0d0 ! 緩和計算時間 [ns]
@@ -24,13 +24,13 @@ module parameters
     double precision, parameter :: time_all = time_scaling + time_relax + time_measure ! 全計算時間
     
     double precision, parameter :: dt = 1.00d0 ! 無次元時間ステップ(無次元，有次元の場合fs)
-    double precision, parameter :: tau = 1.00d0 ! 測定間隔[fs]
+    double precision, parameter :: tau = 1.00d0 ! 測定間隔 [fs]
 
-    double precision, parameter :: tempAr = 100d0 ! 系内（目標）温度  K
-    double precision, parameter :: INTER_STG = 0.01d0 ! 相互作用強さ (interaction strength)
+    double precision, parameter :: TEMP_Ar = 100d0 ! 系内（目標）温度  [K]
+    double precision, parameter :: INTER_STG = 0.1d0 ! 相互作用強さ (interaction strength)
 
-    character(len=20) :: dir_name = 'a0.01_'  ! ファイル名
-!------------------------------------------------!
+    character(len=20) :: dir_name = 'a0.1'  ! ファイル名
+    !------------------------------------------------!
 
     ! ステップ
     integer, parameter :: step_scaling = int(time_scaling/dt*1.0d+6) ! スケーリングステップ
@@ -51,7 +51,7 @@ module parameters
     double precision, parameter :: BND_LEN_X0 = ST_DIST(1) * NUM_Y(1) ! x方向の周期境界長さ(無次元) (boundary length)
     double precision, parameter :: BND_LEN_Y0 = ST_DIST(1) * NUM_Y(1) ! y方向の周期境界長さ(無次元）
     double precision, parameter :: BND_LEN_Z0 = 87.0d0 ! z方向の周期境界長さ(無次元）
-    double precision, parameter :: BND_LEN0(3) = [BND_LEN_X0, BND_LEN_Y0, BND_LEN_Z0]
+    double precision, parameter :: BND_LEN0(TYPMOL) = [BND_LEN_X0, BND_LEN_Y0, BND_LEN_Z0]
     double precision, parameter :: THICK_Pt_UP = ST_DIST(1)*(NUM_Z(1)*0.5d0+0.25d0)
     double precision, parameter :: THICK_Pt_LW = ST_DIST(3)*(NUM_Z(3)*0.5d0+0.25d0)
     double precision, parameter :: THICK_Ar = BND_LEN_Z0 - THICK_Pt_UP - THICK_Pt_LW
@@ -75,7 +75,7 @@ module parameters
     integer, parameter :: step_update = 40 ! 更新ステップ
 
     ! Langevin法
-    double precision, parameter :: temp_Langevin(TYPMOL) = [130d0, 0d0, 70d0] ! Langevin法を用いるPtの温度  真ん中は使わない
+    double precision, parameter :: TEMP_Langevin(TYPMOL) = [130d0, 0d0, 70d0] ! Langevin法を用いるPtの温度  真ん中は使わない
     double precision, parameter :: DIRAC = 1.054571817d-34 ! ディラック定数 [J･s]
     double precision, parameter :: DEBTMP = 240d0 ! Debye温度 [K]
     double precision, parameter :: OMEGA = 3.14212728482d+13 ! BOLTZ * DEBTMP / DIRAC * 1.0d-11 ! Debye定数 (有次元)
@@ -106,7 +106,6 @@ module variable
     ! Langevin法
     double precision :: force_rand(NUM_MOL(1),TYPMOL,3)   ! ランダム力用
     double precision :: force_damp(NUM_MOL(1),TYPMOL,3)   ! ダンパー力用
-    double precision :: stddev ! 標準偏差 (standard deviation)
     double precision :: rnd_2
     logical :: isOdd = .true. ! 乱数のsinとcosを交互に出すためのフラグ
 
@@ -228,10 +227,6 @@ program main
         open(35,file=trim(filepath) // '/energy_all.dat')
     ! 系の温度データの出力
         open(40,file=trim(filepath) // '/temp.dat')
-        open(41,file=trim(filepath) // '/temp_PtUp_Layer.dat')
-        open(42,file=trim(filepath) // '/temp_Ar_Layer.dat')
-        open(43,file=trim(filepath) // '/temp_PtLw_Layer.dat')
-        
         open(45,file=trim(filepath) // '/temp_Layer.dat')
 
     ! 熱流束のデータ
@@ -279,9 +274,9 @@ program main
     write(1, '(A8, I5)') 'total : ', NUM_MOL_ALL
     write(1,*) ''
     write(1, '(A23, F4.2)') 'Strength Coefficient : ', INTER_STG
-    write(1, '(A23, F5.1)') 'Temperature Ar : ', tempAr
-    write(1, '(A23, F5.1)') 'Temperature Pt Upper : ', temp_Langevin(1)
-    write(1, '(A23, F5.1)') 'Temperature Pt Lower : ', temp_Langevin(3)
+    write(1, '(A23, F5.1)') 'Temperature Ar : ', TEMP_Ar
+    write(1, '(A23, F5.1)') 'Temperature Pt Upper : ', TEMP_Langevin(1)
+    write(1, '(A23, F5.1)') 'Temperature Pt Lower : ', TEMP_Langevin(3)
     write(1,*) ''
 
     ! ターミナルに表示
@@ -518,13 +513,13 @@ program main
         integer :: i
 
         temptp = 0.0d0
-        do i = 1, NUM_MOL(j)
-            vel2 = typ(j)%mol(i)%vel(1)**2 + typ(j)%mol(i)%vel(2)**2 + typ(j)%mol(i)%vel(3)**2
+        do i = 1, NUM_MOL(2)
+            vel2 = typ(2)%mol(i)%vel(1)**2 + typ(2)%mol(i)%vel(2)**2 + typ(2)%mol(i)%vel(3)**2
             temptp = temptp + vel2
         end do
-        temptp = temptp / NUM_MOL(j) * 1.0d-16
-        aimtem = tempAr
-        aimnot = 3.000d0 * BOLTZ * aimtem / MASS(j)
+        temptp = temptp / NUM_MOL(2) * 1.0d-16
+        aimtem = TEMP_Ar
+        aimnot = 3.000d0 * BOLTZ * aimtem / MASS(2)
         baiss = dsqrt(aimnot / temptp)
 
         ! 速度ベクトルのスケーリング
@@ -773,7 +768,7 @@ program main
                 do k = 1, 3
                     rnd = Random() 
                     ! ランダム力
-                    force_rand(i,j,k) = rnd * getStddev(temp_Langevin(j)) ! 標準偏差を無次元化したまま扱う
+                    force_rand(i,j,k) = rnd * getStddev(TEMP_Langevin(j)) ! 標準偏差を無次元化したまま扱う
                     ! ダンパー力
                     force_damp(i,j,k) = -DAMP * typ(j)%mol(i)%vel(k) * 1.0d+14 ! ダンパー力を無次元化したまま扱う
                 end do
@@ -839,7 +834,7 @@ program main
             ! Ptの計算
                 ! 固定層
                 do i = 1, NUM_X(j)*NUM_Y(j)
-                    typ(j)%mol(i)%vel(:) = 0.0000d0
+                    typ(j)%mol(i)%vel(:) = 0.0d0
                 end do
     
                 ! その他の層
@@ -916,12 +911,12 @@ program main
             write(71, '(I6, 3E15.7)') i, force_inter(i,1,1)*1.0d-6, force_inter(i,1,2)*1.0d-6, force_inter(i,1,3)*1.0d-6 ! 上Pt, Ar, 下Pt
         end do
     
-        ! 可視化用
-        do j = 1, TYPMOL
-            do i = 1, NUM_MOL(j)
-                ! pos.dat
-                write(15, '(3E15.7)') typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3)
-            end do
+        ! PVWIN用
+        ! do j = 1, TYPMOL
+        !     do i = 1, NUM_MOL(j)
+        !         ! pos.dat
+        !         write(15, '(3E15.7)') typ(j)%mol(i)%pos(1), typ(j)%mol(i)%pos(2), typ(j)%mol(i)%pos(3)
+        !     end do
         end do
     end subroutine record_pos_vel
     
@@ -930,48 +925,43 @@ program main
         use variable
         use molecules_struct
         implicit none
-        double precision, dimension(TYPMOL) :: totEne, totPot, totKin, temp
-        double precision :: allEne, allPot, allKin
-        double precision :: kinPtTmp, kinArTmp(NUM_DIV_Ar)
+        double precision, dimension(TYPMOL) :: ene_sum, pot_sum, kin_sum, temp
+        double precision :: ene_all, pot_all, kin_all
+        double precision :: kin_Pt_tmp, kin_Ar_tmp(NUM_DIV_Ar)
         integer :: cnt(NUM_DIV_Ar)
-        double precision :: tempLayerPt_(NUM_Z(1),TYPMOL)
-        double precision :: tempLayerAr_(NUM_DIV_Ar)
+        double precision :: temp_layer_Pt_(NUM_Z(1),TYPMOL)
+        double precision :: temp_layer_Ar_(NUM_DIV_Ar)
         integer :: i, j, k
-        integer :: stp
-        stp = step_now-step_relax-step_scaling
+        integer :: step
+        step = step_now-step_relax-step_scaling
     
-        allEne = 0.0d0
-        allPot = 0.0d0
-        allKin = 0.0d0
-        totEne(:) = 0.0d0
-        totPot(:) = 0.0d0
-        totKin(:) = 0.0d0
+        ! sum は種類ごとの総和、all はArとPtを合わせた全分子の総和で一応分けている
+        ene_all = 0.0d0
+        pot_all = 0.0d0
+        kin_all = 0.0d0
+        ene_sum(:) = 0.0d0
+        pot_sum(:) = 0.0d0
+        kin_sum(:) = 0.0d0
         temp(:) = 0.0d0
-        tempLayerPt_(:,:) = 0.0d0
-        tempLayerAr_(:) = 0.0d0
+        temp_layer_Pt_(:,:) = 0.0d0
+        temp_layer_Ar_(:) = 0.0d0
     
         do j = 1, TYPMOL
             ! ポテンシャル
             do i = 1, NUM_MOL(j)
-                totPot(j) = totPot(j) + typ(j)%mol(i)%pot
+                pot_sum(j) = pot_sum(j) + typ(j)%mol(i)%pot
             end do
-            totPot(j) = totPot(j) * 1.0d-16
+            pot_sum(j) = pot_sum(j) * 1.0d-16
     
             ! 運動エネルギー
             if (j == 2) then
-                ! Ar
-                ! do i = 1, NUM_MOL(j)
-                !     totKin(j) = totKin(j) + typ(j)%mol(i)%kin
-                ! end do
-                ! totKin(j) = totKin(j) * 1.0d-16
-                ! temp(j) = 2.0d0 * totKin(j) / (3.0d0 * dble(NUM_MOL(j)) * BOLTZ)
-    
-                kinArTmp(:) = 0.0d0
+            ! Arの温度
+                kin_Ar_tmp(:) = 0.0d0 ! 各領域のAr分子の運動エネルギーを足すための変数
                 cnt(:) = 0
                 do i = 1, NUM_MOL(j)
                     do k = 1, NUM_DIV_Ar
                         if ( (k-1)*LEN_DIV_Ar <= (typ(j)%mol(i)%pos(3) - THICK(3)) .and. (typ(j)%mol(i)%pos(3) - THICK(3)) < k*LEN_DIV_Ar) then
-                            kinArTmp(k) = kinArTmp(k) + typ(j)%mol(i)%kin
+                            kin_Ar_tmp(k) = kin_Ar_tmp(k) + typ(j)%mol(i)%kin
                             cnt(k) = cnt(k) + 1
                             cycle
                         end if
@@ -979,64 +969,56 @@ program main
                 end do
     
                 do k = 1, NUM_DIV_Ar
-                    kinArTmp(k) = kinArTmp(k) * 1.0d-16
-                    totKin(j) = totKin(j) + kinArtmp(k)
-                    tempLayerAr_(k) = 2.0d0 * kinArTmp(k) / (3.0d0 * dble(cnt(k)) * BOLTZ)
-                    temp(j) = temp(j) + tempLayerAr_(k)
+                    kin_Ar_tmp(k) = kin_Ar_tmp(k) * 1.0d-16
+                    kin_sum(j) = kin_sum(j) + kin_Ar_tmp(k)
+                    temp_layer_Ar_(k) = 2.000d0 * kin_Ar_tmp(k) / (3.000d0 * dble(cnt(k)) * BOLTZ)
+                    temp(j) = temp(j) + temp_layer_Ar_(k)
                 end do
     
                 temp(j) = temp(j) / dble(NUM_DIV_Ar)
             else
-                ! Pt
+            ! Ptの温度
                 do k = 2, NUM_Z(j) ! Ptの層の数
-                    kinPtTmp = 0.0d0
+                    kin_Pt_tmp = 0.0d0
                     do i = (k-1)*NUM_X(j)*NUM_Y(j) + 1, k*NUM_X(j)*NUM_Y(j)
-                        kinPtTmp = kinPtTmp + typ(j)%mol(i)%kin
+                        kin_Pt_tmp = kin_Pt_tmp + typ(j)%mol(i)%kin
                     end do
     
-                    kinPtTmp = kinPtTmp * 1.0d-16
-                    totKin(j) = totKin(j) + kinPtTmp
-                    tempLayerPt_(k, j) = 2.0d0 * kinPtTmp / (3.0d0 * dble(NUM_MOL(j)/NUM_Z(j)) * BOLTZ)
-                    temp(j) = temp(j) + tempLayerPt_(k, j)
+                    kin_Pt_tmp = kin_Pt_tmp * 1.0d-16
+                    kin_sum(j) = kin_sum(j) + kin_Pt_tmp
+                    temp_layer_Pt_(k, j) = 2.000d0 * kin_Pt_tmp / (3.000d0 * dble(NUM_MOL(j)/NUM_Z(j)) * BOLTZ)
+                    temp(j) = temp(j) + temp_layer_Pt_(k, j)
                 end do
     
                 temp(j) = temp(j) / dble(NUM_Z(j)-1)
             end if
     
-            totEne(j) = totPot(j) + totKin(j)
-            allEne = allEne + totEne(j)
-            allPot = allPot + totPot(j)
-            allKin = allKin + totKin(j)
+            ene_sum(j) = pot_sum(j) + kin_sum(j)
+            ene_all = ene_all + ene_sum(j)
+            pot_all = pot_all + pot_sum(j)
+            kin_all = kin_all + kin_sum(j)
         end do
     
         if(step_now > step_scaling + step_relax) then
             do j = 1, TYPMOL
                 if(j == 2) then
                     do i = 1, NUM_DIV_Ar
-                        temp_layer_Ar(i) = temp_layer_Ar(i) + tempLayerAr_(i)
+                        temp_layer_Ar(i) = temp_layer_Ar(i) + temp_layer_Ar_(i)
                     end do
                 else
                     do i = 2, NUM_Z(j)
-                        temp_layer_Pt(i,j) = temp_layer_Pt(i,j) + tempLayerPt_(i,j)
+                        temp_layer_Pt(i,j) = temp_layer_Pt(i,j) + temp_layer_Pt_(i,j)
                     end do
                 end if
             end do
         end if
         
     
-        write(30, '(5E15.7)') step_now*int(dt)*1.0d-6, totEne(1), totPot(1), totKin(1)  ! energy_PtUp.dat
-        write(31, '(5E15.7)') step_now*int(dt)*1.0d-6, totEne(2), totPot(2), totKin(2)  ! energy_Ar.dat
-        write(32, '(5E15.7)') step_now*int(dt)*1.0d-6, totEne(3), totPot(3), totKin(3)  ! energy_PtLw.dat
-        write(35, '(5E15.7)') step_now*int(dt)*1.0d-6, allEne, allPot, allKin           ! energy_all.dat
+        write(30, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(1), pot_sum(1), kin_sum(1)  ! energy_PtUp.dat
+        write(31, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(2), pot_sum(2), kin_sum(2)  ! energy_Ar.dat
+        write(32, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_sum(3), pot_sum(3), kin_sum(3)  ! energy_PtLw.dat
+        write(35, '(5E15.7)') step_now*int(dt)*1.0d-6, ene_all, pot_all, kin_all           ! energy_all.dat
         write(40, '(5E15.7)') step_now*int(dt)*1.0d-6, temp(1), temp(2), temp(3)        ! temp.dat
-    
-        ! !!!!!!!!!Pt層を増やすとき必ず変更すること!!!!!!!!!
-        ! write(41, '(5E15.7)') stp*int(dt)*1.0d-6, tempLayerPt_(1,1), tempLayerPt_(2,1), tempLayerPt_(3,1), tempLayerPt_(4,1)
-        ! write(42, '(16E15.7)') stp*int(dt)*1.0d-6, tempLayerAr_(1), tempLayerAr_(2), tempLayerAr_(3), tempLayerAr_(4)&
-        !                                                 , tempLayerAr_(5), tempLayerAr_(6), tempLayerAr_(7), tempLayerAr_(8)&
-        !                                                 , tempLayerAr_(9), tempLayerAr_(10), tempLayerAr_(11), tempLayerAr_(12)&
-        !                                                 , tempLayerAr_(13), tempLayerAr_(14), tempLayerAr_(15)
-        ! write(43, '(5E15.7)') stp*int(dt)*1.0d-6, tempLayerPt_(1,3), tempLayerPt_(2,3), tempLayerPt_(3,3), tempLayerPt_(4,3)
     end subroutine record_energy_temp
     
     subroutine record_pressure_heatflux ! 熱流束を記録
@@ -1045,14 +1027,14 @@ program main
         use molecules_struct
         implicit none
         integer :: i, j
-        double precision :: heatfluxPhantom(TYPMOL) ! Phantom層からの熱輸送量
-        double precision :: heatfluxInterface(TYPMOL) ! 固液界面での熱輸送量
+        double precision :: heat_phantom_sum(TYPMOL) ! Phantom層からの熱輸送量
+        double precision :: heat_interface_sum(TYPMOL) ! 固液界面での熱輸送量
         double precision :: pressure(TYPMOL) ! 圧力
-        integer :: stp
-        stp = step_now-step_relax-step_scaling
+        integer :: step
+        step = step_now-step_relax-step_scaling
     
-        heatfluxPhantom(:) = 0.0d0
-        heatfluxInterface(:) = 0.0d0
+        heat_phantom_sum(:) = 0.0d0
+        heat_interface_sum(:) = 0.0d0
         pressure(:) = 0.0d0
     
         do j = 1, TYPMOL
@@ -1060,8 +1042,8 @@ program main
                 cycle
             end if
     
-            heatfluxPhantom(j) = heat_phantom(j) / AREA_Pt * 1.0d+1 ! -9+5+20-15 = +1  (ランダム力-9)*(速度+5)*(面積の逆数+20)*(時間-15)
-            heatfluxInterface(j) = heat_interface(j) / AREA_Pt * 1.0d+4 ! -6+5+20-15 = +4  (相互作用力-6)*(速度+5)*(面積の逆数+20)*(時間-15)
+            heat_phantom_sum(j) = heat_phantom(j) / AREA_Pt * 1.0d+1 ! -9+5+20-15 = +1  (ランダム力-9)*(速度+5)*(面積の逆数+20)*(時間-15)
+            heat_interface_sum(j) = heat_interface(j) / AREA_Pt * 1.0d+4 ! -6+5+20-15 = +4  (相互作用力-6)*(速度+5)*(面積の逆数+20)*(時間-15)
             
             do i = 1, NUM_MOL(j)
                 if(j == 1) then
@@ -1072,8 +1054,8 @@ program main
             end do
         end do
     
-        write(60,'(5E15.7)') stp*int(dt)*1.0d-6, heatfluxPhantom(1), heatfluxPhantom(3), heatfluxInterface(1), heatfluxInterface(3)
-        write(61,'(4E15.7)') stp*int(dt)*1.0d-6, pressure(1), pressure(2), pressure(3)
+        write(60,'(5E15.7)') step*int(dt)*1.0d-6, heat_phantom_sum(1), heat_phantom_sum(3), heat_interface_sum(1), heat_interface_sum(3)
+        write(61,'(4E15.7)') step*int(dt)*1.0d-6, pressure(1), pressure(2), pressure(3)
     end subroutine record_pressure_heatflux
     
     subroutine record_final ! 最終状態を記録
